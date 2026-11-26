@@ -1,58 +1,73 @@
 /* Ranking de consumo total versus as mesmas metas vigentes da tela. */
 window.ConsumoRacaoRanking = (() => {
   'use strict';
-  function aggregate(rows, metas, integrated = null) {
+  function aggregate(rows, metas, integrated = null, phase = 'fase_pre_menos_inicial') {
     const groups = new Map();
     let excluded = 0;
     for (const row of rows) {
       if (integrated !== null && row.codigo !== integrated) continue;
-      const goal = ConsumoRacaoMetas.find(metas, 'consumo_total', row.data);
-      if (!Number.isFinite(row.consumo_total) || !(row.qtde_aves > 0) || goal === null) { excluded++; continue; }
+      const goal = ConsumoRacaoMetas.find(metas, phase, row.data), actual=row[phase];
+      if (!Number.isFinite(actual) || !(row.qtde_aves > 0) || goal === null) { excluded++; continue; }
       const key = integrated === null ? row.codigo : (row.galpao || 'Não informado');
       if (!groups.has(key)) groups.set(key, {key, label: integrated === null ? `${row.codigo} - ${row.integrado || 'Não informado'}` : `Galpão ${key}`, birds:0, actual:0, expected:0, records:0});
       const item = groups.get(key);
-      item.birds += row.qtde_aves; item.actual += row.consumo_total;
+      item.birds += row.qtde_aves; item.actual += actual;
       item.expected += goal * row.qtde_aves; item.records++;
     }
     return {excluded, groups:[...groups.values()].map(item => ({...item,
+      real:item.actual/item.birds, goal:item.expected/item.birds,
       kgPerBird:(item.actual-item.expected)/item.birds, tonnes:(item.actual-item.expected)/1000,
       comparison:ConsumoRacaoMetas.compare(item.actual/item.birds,item.expected/item.birds)
     }))};
   }
-  return Object.freeze({aggregate});
+  function ordered(groups, descending=true){
+    return [...groups].sort((a,b)=>(descending?b.kgPerBird-a.kgPerBird:a.kgPerBird-b.kgPerBird)||a.label.localeCompare(b.label,'pt-BR'));
+  }
+  function gradient(deviation, min, max, green, amber, red){
+    if(Math.abs(deviation)<1e-12)return amber;
+    const end=deviation>0?red:green, range=deviation>0?max:Math.abs(min);
+    const t=range>0?Math.min(1,Math.abs(deviation)/range):0;
+    const rgb=hex=>hex.replace('#','').match(/../g).map(v=>parseInt(v,16));
+    const a=rgb(amber),b=rgb(end);
+    return '#'+a.map((value,i)=>Math.round(value+(b[i]-value)*t).toString(16).padStart(2,'0')).join('');
+  }
+  return Object.freeze({aggregate,ordered,gradient});
 })();
 
 (() => {
   'use strict';
   if(typeof document==='undefined')return;
   const E=id=>document.getElementById(id), host=E('feedRanking'), chartHost=E('feedRankingChart');
-  let rows=[], metas=[], integrated=null, measure='perBird', side='above', chart=null, shown=[];
+  let rows=[], metas=[], integrated=null, phase='fase_pre_menos_inicial', descending=true, chart=null, shown=[];
+  const phaseLabels={...Object.fromEntries(ConsumoRacaoData.phases.map(item=>[item.key,item.label])),consumo_total:'Total'};
   const num=(v,d=3)=>v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
   function reset(){integrated=null;draw();}
   function draw(){
-    const result=ConsumoRacaoRanking.aggregate(rows,metas,integrated);
-    const field=measure==='perBird'?'kgPerBird':'tonnes', unit=measure==='perBird'?'kg/ave':'t';
-    shown=result.groups.filter(item=>side==='above'?item[field]>0:item[field]<0)
-      .sort((a,b)=>Math.abs(b[field])-Math.abs(a[field])||a.label.localeCompare(b.label,'pt-BR'));
+    const result=ConsumoRacaoRanking.aggregate(rows,metas,integrated,phase);
+    shown=ConsumoRacaoRanking.ordered(result.groups,descending);
+    const goal=shown[0]?.goal, mixed=shown.some(item=>Math.abs(item.goal-goal)>1e-10);
     E('feedRankingTitle').textContent=integrated===null?'Ranking de desvios por integrado':`Desvios por galpão · ${rows.find(row=>row.codigo===integrated)?.integrado || integrated}`;
     E('feedRankingBack').hidden=integrated===null;
-    E('feedRankingStatus').textContent=`${shown.length} ${integrated===null?'integrados':'galpões'} ${side==='above'?'acima':'abaixo'} da meta · ${unit}${result.excluded?` · ${result.excluded} registros sem consumo completo, aves válidas ou meta vigente`:''}`;
-    E('feedRankingEmpty').hidden=shown.length>0;
-    E('feedRankingEmpty').textContent=!metas.length?'Metas indisponíveis para calcular o ranking.':'Nenhum desvio nesta seleção.';
+    E('feedRankingStatus').textContent=`${phaseLabels[phase]} · ${shown.length} ${integrated===null?'integrados':'galpões'} · kg/ave${result.excluded?` · ${result.excluded} registros sem consumo da fase, aves válidas ou meta vigente`:''}`;
+    E('feedRankingEmpty').hidden=shown.length>0&&!mixed;
+    E('feedRankingEmpty').textContent=mixed?'Há metas vigentes diferentes entre os grupos. Selecione um período com meta única para comparar com a linha de referência.':!metas.length?'Metas indisponíveis para calcular o ranking.':'Nenhum registro válido nesta seleção.';
     const picker=E('feedRankingPicker');picker.hidden=integrated!==null||!shown.length;
     picker.replaceChildren(new Option('Detalhar integrado…',''),...shown.map(item=>new Option(item.label,item.key)));
-    if(!shown.length){chart?.clear();return;}
-    chartHost.style.height=`${Math.max(300,shown.length*38+65)}px`;
+    if(!shown.length||mixed){chart?.clear();return;}
+    chartHost.style.height=`${Math.max(300,shown.length*38+100)}px`;
     const style=getComputedStyle(document.body), color=name=>style.getPropertyValue(name).trim();
     chart??=echarts.init(chartHost);chart.resize();
+    const min=Math.min(0,...shown.map(item=>item.kgPerBird)), max=Math.max(0,...shown.map(item=>item.kgPerBird));
+    const mobile=matchMedia('(max-width:767px)').matches;
     chart.setOption({animationDuration:160,textStyle:{fontFamily:style.fontFamily},
-      grid:{left:12,right:90,top:18,bottom:30,containLabel:true},
+      grid:{left:12,right:mobile?125:180,top:18,bottom:65,containLabel:true},
       tooltip:{trigger:'item',renderMode:'richText',confine:true,backgroundColor:color('--card'),borderColor:color('--border'),textStyle:{color:color('--foreground')},
         formatter:p=>{const item=shown[p.dataIndex];return `${item.label}\nDesvio: ${num(item.kgPerBird)} kg/ave · ${num(item.tonnes)} t\nRealizado: ${num(item.actual/item.birds)} kg/ave\nMeta ponderada: ${num(item.expected/item.birds)} kg/ave\nAves: ${num(item.birds,0)} · Registros: ${item.records}`;}},
-      xAxis:{type:'value',name:unit,axisLabel:{color:color('--foreground'),fontSize:12},splitLine:{lineStyle:{color:color('--border')}}},
+      xAxis:{type:'value',name:'kg/ave',min:0,max:Math.max(goal,...shown.map(item=>item.real))*1.12,axisLabel:{color:color('--foreground'),fontSize:12},splitLine:{lineStyle:{color:color('--border')}}},
       yAxis:{type:'category',inverse:true,triggerEvent:true,data:shown.map(item=>item.label),axisLabel:{color:color('--foreground'),fontSize:13,width:matchMedia('(max-width:767px)').matches?115:260,overflow:'truncate'},axisTick:{show:false},axisLine:{show:false}},
-      series:[{type:'bar',barMaxWidth:24,label:{show:true,position:side==='above'?'right':'left',color:color('--foreground'),formatter:p=>num(p.value)},
-        data:shown.map(item=>({value:item[field],itemStyle:{color:color('--feed-'+item.comparison.tier+'-text')}}))}]
+      series:[{type:'bar',barMaxWidth:24,label:{show:true,position:'right',fontSize:mobile?11:13,color:color('--foreground'),formatter:p=>{const item=shown[p.dataIndex];return `${num(item.real)} (${item.kgPerBird>0?'+':''}${num(item.kgPerBird)})`;}},
+        markLine:{silent:true,symbol:['none','none'],lineStyle:{color:'#000000',type:'dotted',width:2},label:{show:true,position:'start',distance:20,color:color('--foreground'),backgroundColor:color('--card'),padding:[3,5],formatter:()=>`Meta: ${num(goal)} kg/ave`},data:[{xAxis:goal}]},
+        data:shown.map(item=>({value:item.real,itemStyle:{color:ConsumoRacaoRanking.gradient(item.kgPerBird,min,max,color('--feed-green-text'),color('--feed-orange-text'),color('--feed-red-text'))}}))}]
     },true);
     chart.off('click');chart.on('click',event=>{
       if(integrated!==null)return;
@@ -63,14 +78,11 @@ window.ConsumoRacaoRanking = (() => {
   }
   E('feedRankingPicker').onchange=event=>{if(event.target.value){integrated=event.target.value;draw();}};
   E('feedRankingBack').onclick=reset;
-  host.querySelectorAll('[data-ranking-measure]').forEach(button=>button.onclick=()=>{
-    measure=button.dataset.rankingMeasure;integrated=null;
-    host.querySelectorAll('[data-ranking-measure]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));draw();
+  host.querySelectorAll('[data-ranking-phase]').forEach(button=>button.onclick=()=>{
+    phase=button.dataset.rankingPhase;integrated=null;
+    host.querySelectorAll('[data-ranking-phase]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));draw();
   });
-  host.querySelectorAll('[data-ranking-side]').forEach(button=>button.onclick=()=>{
-    side=button.dataset.rankingSide;integrated=null;
-    host.querySelectorAll('[data-ranking-side]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));draw();
-  });
+  E('feedRankingOrder').onclick=()=>{descending=!descending;integrated=null;E('feedRankingOrder').textContent=descending?'Maior ↓':'Menor ↑';E('feedRankingOrder').setAttribute('aria-label',descending?'Ordenação: maior desvio primeiro. Alternar para menor.':'Ordenação: menor desvio primeiro. Alternar para maior.');draw();};
   document.addEventListener('click',event=>{if(integrated!==null&&(!host.contains(event.target)||event.target.closest('[data-feed-metric],[data-feed-period]')))reset();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!document.querySelector('.if-dialog[open]')&&integrated!==null)reset();});
   document.addEventListener('feed:ranking-data',event=>{rows=event.detail.rows;metas=event.detail.metas;integrated=null;draw();});

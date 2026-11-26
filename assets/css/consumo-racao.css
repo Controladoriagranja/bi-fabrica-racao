@@ -103,4 +103,5 @@
 .feed-ranking-context { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 20px 12px; font-size:13px; color:var(--muted-foreground); flex-wrap:wrap; }
 #feedRankingPicker { max-width:100%; min-height:38px; font:inherit; color:var(--foreground); background:var(--card); border:1px solid var(--border); border-radius:8px; padding:6px 10px; }
 .feed-ranking-scroll { max-height:560px; overflow:auto; }
+.feed-ranking-controls .feed-segment { flex-wrap:wrap; max-width:100%; }
 @media(max-width:767px) { .feed-ranking-context { padding:0 15px 12px; } .feed-ranking-controls { gap:8px; } }
