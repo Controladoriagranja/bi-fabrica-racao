@@ -168,11 +168,11 @@
     const style=getComputedStyle(document.body),color=name=>style.getPropertyValue(name).trim(),font=style.fontFamily;
     const colors=D.phases.map((_,i)=>color('--feed-phase-'+i));
     const tooltip={trigger:'axis',confine:true,renderMode:'richText',backgroundColor:color('--card'),borderColor:color('--border'),textStyle:{color:color('--foreground'),fontFamily:font}};
-    const axis={axisLine:{lineStyle:{color:color('--border')}},axisTick:{show:false},axisLabel:{color:color('--muted-foreground'),fontFamily:font,fontSize:11},splitLine:{lineStyle:{color:color('--border')}}};
+    const axis={axisLine:{lineStyle:{color:color('--border')}},axisTick:{show:false},axisLabel:{color:color('--foreground'),fontFamily:font,fontSize:13},splitLine:{lineStyle:{color:color('--border')}}};
     if(hasPhase){phaseChart??=echarts.init(E('feedPhasesChart'));
       phaseChart.setOption({animationDuration:180,textStyle:{fontFamily:font},grid:{left:90,right:26,top:24,bottom:44},
         tooltip:{...tooltip,formatter:items=>{const phase=summary.phases[items[0].dataIndex];return `${phase.label}\n${metric==='total'?'Consumo':'Consumo/ave'}: ${num(metric==='total'?phase.total:phase.perBird.value)}\nBase por ave: ${num(phase.perBird.denominator,0)} aves\n${phase.perBird.records} registros válidos`; }},
-        xAxis:{...axis,type:'category',data:D.phases.map(phase=>phase.label),axisLabel:{...axis.axisLabel,interval:0,fontSize:10}},
+        xAxis:{...axis,type:'category',data:D.phases.map(phase=>phase.label),axisLabel:{...axis.axisLabel,interval:0,fontSize:12}},
         yAxis:{...axis,type:'value',axisLabel:{...axis.axisLabel,formatter:value=>num(value)}},
         series:[{type:'bar',barMaxWidth:55,label:{show:true,position:'top',color:color('--foreground'),formatter:params=>num(params.value)},
           data:summary.phases.map((phase,i)=>({value:metric==='total'?phase.total:phase.perBird.value,itemStyle:{color:colors[i],borderRadius:[5,5,0,0]}}))}]},true);}
