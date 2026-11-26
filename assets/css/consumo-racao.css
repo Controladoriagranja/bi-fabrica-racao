@@ -84,8 +84,8 @@
 [data-theme="dark"] .feed-report { --muted-foreground:#c0b7ba; }
 .feed-report .feed-table { font-size:14px; }
 .feed-report .feed-table td { font-weight:500; }
-.feed-report .feed-table td.feed-target-orange { background-color:#f5edca; font-weight:700; }
-[data-theme="dark"] .feed-report .feed-table td.feed-target-orange { background-color:#35301d; }
+.feed-report .feed-table td.feed-target-orange { font-weight:700; }
+
 .feed-report .feed-table tfoot td { font-weight:700; }
 .feed-report .feed-kpi h2 { font-size:14px; color:var(--foreground); }
 .feed-report .feed-kpi>strong { font-size:clamp(1.5rem,2vw,1.9rem); line-height:1.3; }
