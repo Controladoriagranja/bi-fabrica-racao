@@ -49,8 +49,8 @@
 #feedLineageTable th[aria-sort="ascending"] [data-sort-icon],#feedLineageTable th[aria-sort="descending"] [data-sort-icon] { color:var(--primary); }
 .feed-table tfoot td { font-weight:700; background:var(--secondary); }
 .feed-table .feed-numeric { font-variant-numeric:tabular-nums; }
-.feed-report { --feed-green-text:#00843d; --feed-orange-text:#806700; --feed-red-text:#d12838; }
-[data-theme="dark"] .feed-report { --feed-green-text:#6add96; --feed-orange-text:#d6be62; --feed-red-text:#ff929e; }
+.feed-report { --feed-green-text:#00843d; --feed-orange-text:#B36B00; --feed-red-text:#d12838; }
+[data-theme="dark"] .feed-report { --feed-green-text:#6add96; --feed-red-text:#ff929e; }
 .feed-report .feed-table td.feed-target-green { color:var(--feed-green-text); font-weight:600; }
 .feed-report .feed-table td.feed-target-orange { color:var(--feed-orange-text); font-weight:600; }
 .feed-report .feed-table td.feed-target-red { color:var(--feed-red-text); font-weight:600; }
@@ -79,12 +79,12 @@
 @media(max-width:1100px) { .feed-report .filters-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .feed-charts { grid-template-columns:minmax(0,1fr); } }
 @media(max-width:767px) { .feed-report .filters-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .feed-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .feed-kpi { padding:8px 10px; } .feed-heading,.feed-state { padding:15px; } .feed-state { align-items:flex-start; flex-direction:column; } .feed-chart { height:280px; } .feed-footer nav { width:100%; justify-content:space-between; } .feed-context { display:grid; } .feed-inset { padding:10px 14px; } }
 
-/* Readable typography and restrained yellow for the intermediate target band. */
+/* Readable typography. Intermediate classification uses --feed-orange-text in both themes. */
 .feed-report { font-size:16px; --muted-foreground:#5c5356; }
 [data-theme="dark"] .feed-report { --muted-foreground:#c0b7ba; }
 .feed-report .feed-table { font-size:14px; }
 .feed-report .feed-table td { font-weight:500; }
-.feed-report .feed-table td.feed-target-orange { font-weight:700; }
+
 
 .feed-report .feed-table tfoot td { font-weight:700; }
 .feed-report .feed-kpi h2 { font-size:14px; color:var(--foreground); }
