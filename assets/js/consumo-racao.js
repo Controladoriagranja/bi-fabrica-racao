@@ -59,6 +59,7 @@
     for(const id of ['feedStart','feedEnd','limparFeedFiltros','feedPageSize'])E(id).disabled=!value;
   }
   function clearDisplay(message){
+    document.dispatchEvent(new CustomEvent('feed:ranking-data',{detail:{rows:[],metas:[]}}));
     selected=[];summary=null;
     for(const id of ['feedTotal','feedBirds','feedPerBird','feedRecords','feedUpdated','feedPage','feedPageCount'])E(id).textContent='—';
     E('feedCoverage').textContent='';E('feedLineageTotal').replaceChildren();
@@ -120,6 +121,7 @@
     E('feedState').hidden=selected.length>0;
     if(!selected.length)state('empty','Nenhum registro neste recorte','Ajuste o período ou limpe os filtros para consultar outros registros disponíveis.');
     renderLineages();renderDetails();drawCharts();
+    document.dispatchEvent(new CustomEvent('feed:ranking-data',{detail:{rows:selected,metas}}));
   }
   function render(){if(!snapshot)return;const finish=ApiActivity.begin();requestAnimationFrame(()=>{try{renderNow();}catch(error){fail(error);}finally{finish();}});}
   function fail(error){
@@ -143,7 +145,7 @@
       if(!result.demonstration&&ConsumoRacaoConfig.targetsEndpoint){
         try{
           const loaded=await ConsumoRacaoMetas.load(ConsumoRacaoConfig.targetsEndpoint,{signal:request.signal});
-          if(id!==loadId)return;adapter.assertSession();metas=loaded;renderLineages();renderDetails();
+          if(id!==loadId)return;adapter.assertSession();metas=loaded;renderLineages();renderDetails();document.dispatchEvent(new CustomEvent('feed:ranking-data',{detail:{rows:selected,metas}}));
           E('feedTargetsStatus').textContent=loaded.length?'Metas em kg/ave · verde: até ±1% · laranja: acima de ±1% até ±3% · vermelho: acima de ±3%. Meta de Crescimento = Crescimento + Crescimento 2; total = soma das fases vigentes.':'Nenhuma meta aplicável cadastrada.';
         }catch(error){
           if(id!==loadId||error?.name==='AbortError')return;

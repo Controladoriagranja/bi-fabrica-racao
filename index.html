@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="assets/css/app.css?v=20261118-filtros-indicador">
   <link rel="stylesheet" href="assets/css/mobile-filters.css?v=20261118-cabecalhos">
   <link rel="stylesheet" href="assets/css/indicator-formulas.css?v=20261106-fx">
-  <link rel="stylesheet" href="assets/css/consumo-racao.css?v=20261126-ambar-13">
+  <link rel="stylesheet" href="assets/css/consumo-racao.css?v=20261126-ranking-14">
 </head>
 <body data-page="consumo-racao" class="feed-report">
 <main class="app-shell">
@@ -40,26 +40,37 @@
   <p id="feedCoverage" class="feed-footnote" role="status"></p>
   <div class="feed-charts">
     <section class="card feed-section" aria-labelledby="feedPhaseTitle">
-      <div class="feed-heading"><div><h2 id="feedPhaseTitle">Comparativo entre fases</h2><p id="feedPhaseSubtitle">Consumo por ave · escala original</p></div><div class="feed-segment" role="group" aria-label="Medida dos gráficos"><button type="button" data-feed-metric="perBird" aria-pressed="true">Por ave</button><button type="button" data-feed-metric="total" aria-pressed="false">Total</button></div></div>
+      <div class="feed-heading"><div><h2 id="feedPhaseTitle">Comparativo entre fases</h2><span data-formula-mount="feed.phaseChart"></span><p id="feedPhaseSubtitle">Consumo por ave · escala original</p></div><div class="feed-segment" role="group" aria-label="Medida dos gráficos"><button type="button" data-feed-metric="perBird" aria-pressed="true">Por ave</button><button type="button" data-feed-metric="total" aria-pressed="false">Total</button></div></div>
       <div class="feed-chart-wrap"><div id="feedPhasesChart" class="feed-chart" role="img" aria-label="Comparação do consumo nas quatro fases"></div><p class="feed-chart-empty" id="feedPhasesEmpty">Aguardando dados.</p></div>
     </section>
     <section class="card feed-section" aria-labelledby="feedEvolutionTitle">
-      <div class="feed-heading"><div><h2 id="feedEvolutionTitle">Evolução do consumo</h2><p id="feedEvolutionSubtitle">Por data do acerto · consumo por ave</p></div><div class="feed-segment" role="group" aria-label="Agrupamento da evolução"><button type="button" data-feed-period="dia" aria-pressed="true">Dia</button><button type="button" data-feed-period="semana" aria-pressed="false">Semana</button><button type="button" data-feed-period="mes" aria-pressed="false">Mês</button></div></div>
+      <div class="feed-heading"><div><h2 id="feedEvolutionTitle">Evolução do consumo</h2><span data-formula-mount="feed.evolution"></span><p id="feedEvolutionSubtitle">Por data do acerto · consumo por ave</p></div><div class="feed-segment" role="group" aria-label="Agrupamento da evolução"><button type="button" data-feed-period="dia" aria-pressed="true">Dia</button><button type="button" data-feed-period="semana" aria-pressed="false">Semana</button><button type="button" data-feed-period="mes" aria-pressed="false">Mês</button></div></div>
       <div class="feed-chart-wrap"><div id="feedEvolutionChart" class="feed-chart" role="img" aria-label="Evolução do consumo no período selecionado"></div><p class="feed-chart-empty" id="feedEvolutionEmpty">Aguardando dados.</p></div>
     </section>
   </div>
-  <section class="card feed-section" aria-labelledby="feedLineageTitle">
-    <div class="feed-heading"><div><h2 id="feedLineageTitle">Consumo por linhagem</h2><p>Consumo por ave em kg/ave · razão entre as somas</p></div><span data-formula-mount="feed.phase"></span></div>
-    <div class="feed-scroll" tabindex="0" role="region" aria-label="Resumo por linhagem, com rolagem horizontal">
-      <table class="feed-table" id="feedLineageTable"><thead><tr><th scope="col">Linhagem</th><th scope="col">Pré-Inicial / ave</th><th scope="col">Inicial / ave</th><th scope="col">Crescimento / ave</th><th scope="col">Final / ave</th><th scope="col">Total / ave</th><th scope="col">Aves</th><th scope="col">Registros</th></tr></thead><tbody id="feedLineages"><tr><td colspan="8">Aguardando dados.</td></tr></tbody><tfoot id="feedLineageTotal"></tfoot></table>
+  <section class="card feed-section" id="feedRanking" aria-labelledby="feedRankingTitle">
+    <div class="feed-heading"><div class="feed-ranking-title"><h2 id="feedRankingTitle">Ranking de desvios por integrado</h2><span data-formula-mount="feed.ranking"></span></div>
+      <div class="feed-ranking-controls">
+        <button id="feedRankingBack" type="button" class="button" hidden>Voltar</button>
+        <div class="feed-segment" role="group" aria-label="Sentido do desvio"><button type="button" data-ranking-side="above" aria-pressed="true">Acima da meta</button><button type="button" data-ranking-side="below" aria-pressed="false">Abaixo da meta</button></div>
+        <div class="feed-segment" role="group" aria-label="Medida do ranking"><button type="button" data-ranking-measure="perBird" aria-pressed="true">Por ave</button><button type="button" data-ranking-measure="total" aria-pressed="false">Total (t)</button></div>
+      </div>
     </div>
-    <p class="feed-footnote feed-inset" id="feedTargetsStatus" role="status">Metas: aguardando consulta.</p>
+    <div class="feed-ranking-context"><span id="feedRankingStatus" role="status"></span><select id="feedRankingPicker" aria-label="Detalhar integrado" hidden></select></div>
+    <div class="feed-ranking-scroll"><div class="feed-chart-wrap"><div id="feedRankingChart" class="feed-chart" role="img" aria-label="Ranking dos desvios de consumo em relação à meta"></div><p class="feed-chart-empty" id="feedRankingEmpty">Aguardando dados.</p></div></div>
   </section>
   <section class="card feed-section" aria-labelledby="feedDetailTitle">
     <div class="feed-heading"><div><h2 id="feedDetailTitle">Registros detalhados</h2><p id="feedDetailNote">Valores por registro, preservando a escala da origem.</p></div><label class="feed-page-size">Por página<select id="feedPageSize" disabled><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></label></div>
     <div class="feed-scroll feed-detail-scroll" tabindex="0" role="region" aria-label="Registros detalhados, com rolagem horizontal e vertical"><table class="feed-table" id="feedDetailTable" aria-busy="false"><thead><tr id="feedDetailHead"></tr></thead><tbody id="feedDetailRows"><tr><td>Aguardando dados.</td></tr></tbody></table></div>
     <footer class="feed-footer"><span id="feedPageCount">—</span><nav aria-label="Paginação dos registros"><button id="feedPrev" class="button" type="button" disabled>Anterior</button><span id="feedPage">—</span><button id="feedNext" class="button" type="button" disabled>Próxima</button></nav></footer>
     <p class="feed-footnote feed-inset">“Cons/Dia” é exibido como informado. Seu significado permanece em confirmação e ele não participa dos indicadores.</p>
+  </section>
+  <section class="card feed-section" aria-labelledby="feedLineageTitle">
+    <div class="feed-heading"><div><h2 id="feedLineageTitle">Consumo por linhagem</h2><p>Consumo por ave em kg/ave · razão entre as somas</p></div><span data-formula-mount="feed.phase"></span></div>
+    <div class="feed-scroll" tabindex="0" role="region" aria-label="Resumo por linhagem, com rolagem horizontal">
+      <table class="feed-table" id="feedLineageTable"><thead><tr><th scope="col">Linhagem</th><th scope="col">Pré-Inicial / ave</th><th scope="col">Inicial / ave</th><th scope="col">Crescimento / ave</th><th scope="col">Final / ave</th><th scope="col">Total / ave</th><th scope="col">Aves</th><th scope="col">Registros</th></tr></thead><tbody id="feedLineages"><tr><td colspan="8">Aguardando dados.</td></tr></tbody><tfoot id="feedLineageTotal"></tfoot></table>
+    </div>
+    <p class="feed-footnote feed-inset" id="feedTargetsStatus" role="status">Metas: aguardando consulta.</p>
   </section>
 </main>
 <script src="assets/js/config.js"></script>
@@ -72,9 +83,10 @@
 <script src="assets/js/consumo-racao-config.js?v=20261126-metas-7"></script>
 <script src="assets/js/consumo-racao-data.js?v=20261126-kg-6"></script>
 <script src="assets/js/consumo-racao-metas.js?v=20261126-fontes-10"></script>
-<script src="assets/js/consumo-racao-formulas.js?v=20261126-fontes-10"></script>
+<script src="assets/js/consumo-racao-formulas.js?v=20261126-ranking-1"></script>
 <script src="assets/js/indicator-formulas.js?v=20261106-fx"></script>
-<script src="assets/js/consumo-racao.js?v=20261126-legibilidade-11"></script>
+<script src="assets/js/consumo-racao-ranking.js?v=20261126-ranking-1"></script>
+<script src="assets/js/consumo-racao.js?v=20261126-ranking-1"></script>
 <script src="assets/js/sidebar.js?v=consumo-20261126-1"></script>
 </body>
 </html>
