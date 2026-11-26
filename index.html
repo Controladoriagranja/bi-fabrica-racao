@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="assets/css/app.css?v=20261118-filtros-indicador">
   <link rel="stylesheet" href="assets/css/mobile-filters.css?v=20261118-cabecalhos">
   <link rel="stylesheet" href="assets/css/indicator-formulas.css?v=20261106-fx">
-  <link rel="stylesheet" href="assets/css/consumo-racao.css?v=20261126-ranking-fases-15">
+  <link rel="stylesheet" href="assets/css/consumo-racao.css?v=20261126-ranking-distancia-16">
 </head>
 <body data-page="consumo-racao" class="feed-report">
 <main class="app-shell">
@@ -51,12 +51,12 @@
   <section class="card feed-section" id="feedRanking" aria-labelledby="feedRankingTitle">
     <div class="feed-heading"><div class="feed-ranking-title"><h2 id="feedRankingTitle">Ranking de desvios por integrado</h2><span data-formula-mount="feed.ranking"></span></div>
       <div class="feed-ranking-controls">
-        <button id="feedRankingBack" type="button" class="button" hidden>Voltar</button>
         <div class="feed-segment" role="group" aria-label="Fase do ranking"><button type="button" data-ranking-phase="fase_pre_menos_inicial" aria-pressed="true">Pré-inicial</button><button type="button" data-ranking-phase="fase_inicial" aria-pressed="false">Inicial</button><button type="button" data-ranking-phase="fase_crescimento" aria-pressed="false">Crescimento</button><button type="button" data-ranking-phase="fase_final" aria-pressed="false">Final</button><button type="button" data-ranking-phase="consumo_total" aria-pressed="false">Total</button></div>
         <button type="button" class="button" id="feedRankingOrder" aria-label="Ordenação: maior desvio primeiro. Alternar para menor.">Maior ↓</button>
       </div>
     </div>
-    <div class="feed-ranking-context"><span id="feedRankingStatus" role="status"></span><select id="feedRankingPicker" aria-label="Detalhar integrado" hidden></select></div>
+    <div class="feed-ranking-context"><span id="feedRankingStatus" role="status"></span></div>
+    <div class="feed-ranking-meta-row"><span id="feedRankingMeta" hidden></span></div>
     <div class="feed-ranking-scroll"><div class="feed-chart-wrap"><div id="feedRankingChart" class="feed-chart" role="img" aria-label="Ranking dos desvios de consumo em relação à meta"></div><p class="feed-chart-empty" id="feedRankingEmpty">Aguardando dados.</p></div></div>
   </section>
   <section class="card feed-section" aria-labelledby="feedDetailTitle">
@@ -83,9 +83,9 @@
 <script src="assets/js/consumo-racao-config.js?v=20261126-metas-7"></script>
 <script src="assets/js/consumo-racao-data.js?v=20261126-kg-6"></script>
 <script src="assets/js/consumo-racao-metas.js?v=20261126-fontes-10"></script>
-<script src="assets/js/consumo-racao-formulas.js?v=20261126-fases-2"></script>
+<script src="assets/js/consumo-racao-formulas.js?v=20261126-distancia-3"></script>
 <script src="assets/js/indicator-formulas.js?v=20261106-fx"></script>
-<script src="assets/js/consumo-racao-ranking.js?v=20261126-fases-2"></script>
+<script src="assets/js/consumo-racao-ranking.js?v=20261126-distancia-3"></script>
 <script src="assets/js/consumo-racao.js?v=20261126-ranking-1"></script>
 <script src="assets/js/sidebar.js?v=consumo-20261126-1"></script>
 </body>
