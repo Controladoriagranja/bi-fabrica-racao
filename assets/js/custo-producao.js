@@ -36,7 +36,11 @@
    const variation=text('th','Variação'+(previous?' · '+period(last)+' − '+period(previous):''));variation.rowSpan=2;variation.scope='col';top.append(variation);head.append(top,bottom);table.append(head);
    const metrics=[['producao_kg','Produção Ração',null,0],['dias_producao','Dias de Produção',null,0],['producao_diaria','Produção Diária',null,0],['materia_prima','Custo Direto (Matéria Prima) 302','materia_prima_kg',2],['gastos_operacionais','Alocado Rateio (Gastos Operacionais) 301','gastos_operacionais_kg',2],['frete','Frete Rateio (Frete) 304 - RAÇÃO MT','frete_kg',2],['custo_total','Custo Total','custo_total_kg',2]];
    for(const [key,label,perKg,digits] of metrics){const tr=text('tr','',key==='custo_total'?'total':perKg?'':'quantity');tr.append(text('th',label));tr.firstChild.scope='row';
-    for(const row of records){tr.append(text('td',num(row[key],digits)),text('td',perKg?num(row[perKg]):'','month-end'));}
+    for(const row of records){
+     const value=text('td',num(row[key],digits));
+     if(!perKg){value.colSpan=2;value.className='month-end';tr.append(value);}
+     else tr.append(value,text('td',num(row[perKg]),'month-end'));
+    }
     const field=perKg||key,delta=previous&&last[field]!=null&&previous[field]!=null?Number(last[field])-Number(previous[field]):null;
     const td=text('td',num(delta,perKg?2:digits),'variance');td.title=previous?period(last)+' menos '+period(previous)+(perKg?' · R$/kg':''):'Aguardando importação do mês anterior';
     if(delta)td.classList.add((perKg?delta>0:delta<0)?'adverse':'favorable');tr.append(td);body.append(tr);
