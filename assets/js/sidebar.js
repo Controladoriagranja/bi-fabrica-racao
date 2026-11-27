@@ -6,7 +6,8 @@
     const current = document.body.dataset.page || "";
 
     const items = [
-        { id: "consumo-racao", label: "Consumo Médio de Ração", href: "index.html" }
+        { id: "consumo-racao", label: "Consumo Médio de Ração", href: "index.html" },
+        { id: "custo-producao", label: "Custo Produção", href: "custo-producao.html" }
     ];
 
     const root = document.createElement("div");
