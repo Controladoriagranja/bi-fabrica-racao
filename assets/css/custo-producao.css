@@ -20,8 +20,9 @@ body[data-page="custo-producao"] .update-meta strong{font-size:13px}
 .cost-table thead th{background:var(--primary);color:var(--primary-foreground);text-align:center;border-right:1px solid #ffffff38;position:sticky;top:0;z-index:2}
 .cost-table thead tr:nth-child(2) th{top:23px;font-size:11px}.cost-table tbody th,.cost-table thead tr:first-child th:first-child{text-align:left;min-width:285px;position:sticky;left:0;z-index:1;background:var(--card)}
 .cost-table thead tr:first-child th:first-child{z-index:3;background:var(--primary)}.cost-table tbody th{font-weight:400}.cost-table .quantity th,.cost-table .quantity td{font-weight:650}.cost-table tbody tr:nth-child(even)>*{background:var(--secondary)}
-.cost-table .total td{font-weight:750;background:var(--muted);border-top:2px solid var(--primary)}.cost-table .month-end{border-right:1px solid var(--border)}
-.cost-table .adverse{color:#b42332}.cost-table .favorable{color:#187857}.cost-table .variance{background:var(--secondary);font-weight:650}
+.cost-table tbody tr:nth-child(odd)>*{background:var(--card)}
+.cost-table .total td{font-weight:750;border-top:2px solid var(--primary)}.cost-table .month-end{border-right:1px solid var(--border)}
+.cost-table .adverse{color:#b42332}.cost-table .favorable{color:#187857}.cost-table .variance{font-weight:650}
 .cost-table thead tr:first-child th:last-child{white-space:normal}
 .cost-empty{padding:32px;text-align:center;color:var(--muted-foreground)}.cost-rules{padding:9px 14px;font-size:11px;line-height:1.6}.cost-rules summary{cursor:pointer;font-weight:650}
 @media(max-width:767px){body[data-page="custo-producao"] .page-header h1{font-size:21px}.cost-section{padding:10px}.cost-table th,.cost-table td{padding:5px 8px}.cost-table tbody th,.cost-table thead tr:first-child th:first-child{min-width:200px;max-width:230px;white-space:normal}.cost-table thead tr:nth-child(2) th{top:27px}.cost-filters .button{flex:1}}
