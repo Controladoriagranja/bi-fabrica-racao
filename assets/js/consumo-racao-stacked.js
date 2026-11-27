@@ -1,5 +1,11 @@
 /* Base comum entre segmentos para que a pilha reconcilie com o total existente. */
 window.ConsumoRacaoStacked = Object.freeze({
+  weekLabel(value) {
+    const date=new Date(value+'T00:00:00Z');
+    date.setUTCDate(date.getUTCDate()+4-(date.getUTCDay()||7));
+    const start=new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    return `SEM ${Math.ceil((((date-start)/86400000)+1)/7)}`;
+  },
   visibleCount(width, metric, count) {
     // Reserve enough horizontal room for actual labels, especially large kg totals.
     const slot=metric==='total'?190:145;
@@ -14,13 +20,13 @@ window.ConsumoRacaoStacked = Object.freeze({
       return {...item,height,blocks:ConsumoRacaoData.phases.map(()=>height/ConsumoRacaoData.phases.length)};
     });
   },
-  periods(rows, grouping, metric) {
-    const valid=rows.filter(row=>Number.isFinite(row.consumo_total)
-      &&ConsumoRacaoData.phases.every(phase=>Number.isFinite(row[phase.key]))
+  periods(rows, grouping, metric, phase='consumo_total') {
+    const valid=rows.filter(row=>(phase==='consumo_total'?(Number.isFinite(row.consumo_total)
+      &&ConsumoRacaoData.phases.every(phase=>Number.isFinite(row[phase.key]))):Number.isFinite(row[phase]))
       &&(metric==='total'||row.qtde_aves>0));
     return ConsumoRacaoData.evolution(valid,grouping).map(item=>({
       name:item.name,records:item.records,birds:item.birds,
-      total:metric==='total'?item.total:item.perBird.value,
+      total:phase==='consumo_total'?(metric==='total'?item.total:item.perBird.value):item.phases.map(p=>metric==='total'?p.total:p.perBird.value)[ConsumoRacaoData.phases.findIndex(p=>p.key===phase)],
       values:item.phases.map(phase=>metric==='total'?phase.total:phase.perBird.value)
     }));
   }

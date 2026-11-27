@@ -40,7 +40,7 @@ window.ConsumoRacaoRanking = (() => {
   'use strict';
   if(typeof document==='undefined')return;
   const E=id=>document.getElementById(id), host=E('feedRanking'), chartHost=E('feedRankingChart');
-  let rows=[], metas=[], integrated=null, phase='fase_pre_menos_inicial', descending=true, chart=null;
+  let rows=[], metas=[], integrated=null, phase=FeedPhase.get(), descending=true, chart=null;
   const phaseLabels={...Object.fromEntries(ConsumoRacaoData.phases.map(item=>[item.key,item.label])),consumo_total:'Total'};
   const num=(v,d=3)=>v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
   let currentGoal=null;
@@ -84,8 +84,11 @@ window.ConsumoRacaoRanking = (() => {
     chart.off('click');
   }
   host.querySelectorAll('[data-ranking-phase]').forEach(button=>button.onclick=()=>{
-    phase=button.dataset.rankingPhase;integrated=null;
-    host.querySelectorAll('[data-ranking-phase]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));draw();
+    FeedPhase.set(button.dataset.rankingPhase);
+  });
+  document.addEventListener('feed:phase-change',event=>{
+    phase=event.detail.phase;integrated=null;
+    host.querySelectorAll('[data-ranking-phase]').forEach(item=>item.setAttribute('aria-pressed',String(item.dataset.rankingPhase===phase)));draw();
   });
   E('feedRankingOrder').onclick=()=>{descending=!descending;integrated=null;E('feedRankingOrder').textContent=descending?'Maior ↓':'Menor ↑';E('feedRankingOrder').setAttribute('aria-label',descending?'Ordenação: maior desvio primeiro. Alternar para menor.':'Ordenação: menor desvio primeiro. Alternar para maior.');draw();};
   document.addEventListener('feed:ranking-data',event=>{rows=event.detail.rows;metas=event.detail.metas;integrated=null;draw();});

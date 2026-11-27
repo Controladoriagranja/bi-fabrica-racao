@@ -1,6 +1,6 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
 const root=path.resolve(__dirname,'..'),ctx={};ctx.window=ctx;vm.createContext(ctx);
-for(const file of ['data','metas','ranking'])vm.runInContext(fs.readFileSync(path.join(root,`assets/js/consumo-racao-${file}.js`),'utf8'),ctx);
+for(const file of ['data','metas','selection','ranking'])vm.runInContext(fs.readFileSync(path.join(root,`assets/js/consumo-racao-${file}.js`),'utf8'),ctx);
 const M=ctx.ConsumoRacaoMetas,R=ctx.ConsumoRacaoRanking;
 const total=(rows,metas,integrated=null)=>R.aggregate(rows,metas,integrated,'consumo_total');
 const metas=Object.values(M.mapping).flat().map(code=>({code,date:'2026-01-01',value:1}));
@@ -27,11 +27,13 @@ const phases=['fase_pre_menos_inicial','fase_inicial','fase_crescimento','fase_f
 el('feedRanking').querySelectorAll=()=>phases;
 el('feedRanking').querySelector=()=>el('ranking-scroll');
 const chart={convertToPixel(){return 220;},resize(){},clear(){option=null;},setOption(value){option=value;},off(){},on(name,fn){clicks[name]=fn;},getZr(){return {off(){},on(name,fn){zr[name]=fn;}};}};
-Object.assign(ctx,{document:{body:{},getElementById:el,querySelector:()=>null,addEventListener:(name,fn)=>events[name]=fn},
-  Option:function(label,value){this.label=label;this.value=value;},getComputedStyle:()=>({fontFamily:'sans-serif',getPropertyValue:()=> '#B36B00'}),
+Object.assign(ctx,{document:{body:{},getElementById:el,querySelector:()=>null,dispatchEvent:event=>events[event.type]?.(event),addEventListener:(name,fn)=>events[name]=fn},
+  CustomEvent:class{constructor(type,options){this.type=type;this.detail=options.detail;}},Option:function(label,value){this.label=label;this.value=value;},getComputedStyle:()=>({fontFamily:'sans-serif',getPropertyValue:()=> '#B36B00'}),
   matchMedia:()=>({matches:false}),ResizeObserver:class{observe(){}},echarts:{init:()=>chart}});
 vm.runInContext(fs.readFileSync(path.join(root,'assets/js/consumo-racao-ranking.js'),'utf8'),ctx);
 const supply=()=>events['feed:ranking-data']({detail:{rows,metas}});
+assert.equal(ctx.FeedPhase.get(),'consumo_total');
+phases[0].onclick();
 supply();assert.equal(option.series[0].data.length,2);
 assert.equal(option.yAxis.data[0],'B - Integrado B');
 assert.equal(option.series[0].data[0].value,1.1);
