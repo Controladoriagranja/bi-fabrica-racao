@@ -94,6 +94,8 @@
         replay = true;
         try { targets.forEach(el => el.dispatchEvent(new Event('change',{bubbles:true}))); }
         finally { replay = false; }
+        // The feed screen deliberately defers date changes until Apply on mobile.
+        if(media.matches)await originalChange?.(controller.values());
       } else await originalChange?.(controller.values());
     } catch (error) { if (error.name !== 'AbortError') { failed = true;status.textContent = 'Não foi possível aplicar os filtros. Tente novamente.'; } }
     finally { applying = false;find('.mobile-filter-apply').disabled = false;shell.setAttribute('aria-busy','false');if (!failed) counter(); }
@@ -125,7 +127,9 @@
   }};
   clear.addEventListener('click',event => {
     if (!media.matches || !controller) return;
-    event.stopImmediatePropagation();controller.clear();refreshDraft();
+    event.stopImmediatePropagation();
+    if(controller.clearMobileFilters)controller.clearMobileFilters();else controller.clear();
+    refreshDraft();
   },true);
   grid.addEventListener('change',event => {
     if (!media.matches || replay || !controller || !event.target.matches('select,input[type="date"]')) return;

@@ -1,0 +1,35 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
+function element(){return {hidden:false,attrs:{},handlers:{},setAttribute(k,v){this.attrs[k]=v;},addEventListener(k,fn,capture){(this.handlers[k]??=[]).push({fn,capture});},append(){},focus(){this.focused=true;}};}
+let mobile=true;
+const dates={feedStart:{value:'2026-11-20',min:'2026-10-13'},feedEnd:{value:'2026-11-21',max:'2026-11-26'}};
+const ctx={matchMedia:()=>({matches:mobile}),document:{createElement:element,getElementById:id=>dates[id]}};ctx.window=ctx;vm.createContext(ctx);
+for(const file of ['filters.js','consumo-racao-filters.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../assets/js',file),'utf8'),ctx);
+const Base=vm.runInContext('FilterController',ctx),Feed=vm.runInContext('FeedFilterController',ctx);
+const field={apiKey:'fazenda',label:'Fazenda / Integrado'},all=element();all.checked=false;
+const allRow={dataset:{filterLabel:'Selecionar tudo'},hidden:false,querySelector:q=>q==='[data-all]'?all:null};
+const option=(value,label)=>{const input={value,checked:false};return {dataset:{filterLabel:label},hidden:false,input,querySelector:q=>q==='[data-all]'?null:input};};
+const rows=[allRow,option('1','José Brasília'),option('2','João'),option('3','Outro produtor')];
+const list={...element(),querySelectorAll:()=>rows,querySelector:()=>all};
+const state={host:element(),button:element(),panel:element(),list,search:{...element(),value:'',parentElement:element()},selected:new Set(['3'])};
+Base.prototype.buildMulti=function(){return state;};Base.prototype.renderMultiOptions=function(){this.applySearch(field);};
+Base.prototype.clear=function(){state.selected.clear();this.applySearch(field);};
+const controller=Object.create(Feed.prototype);controller.multiState=new Map([['fazenda',state]]);controller.getState=()=>state;
+let changed=0,closed=0;controller.updateButton=()=>{};controller.emitChange=async()=>{changed++;};controller.closeAll=()=>{closed++;};
+controller.buildMulti(field);controller.renderMultiOptions(field,[],[]);
+state.search.value='jose brasilia';controller.applySearch(field);
+assert.equal(rows[1].hidden,false);assert.equal(rows[2].hidden,true);assert.equal(state.feedClearSearch.hidden,false);
+const selectAll=all.handlers.change.find(h=>h.capture).fn;
+(async()=>{
+  all.checked=true;let stopped=false;await selectAll({stopImmediatePropagation(){stopped=true;}});
+  assert.equal(stopped,true);assert.deepEqual([...state.selected].sort(),['1','3']);assert.equal(changed,1);
+  all.checked=false;await selectAll({stopImmediatePropagation(){}});assert.deepEqual([...state.selected],['3']);
+  state.search.value='not found';controller.applySearch(field);assert.equal(state.feedEmpty.hidden,false);assert.equal(all.disabled,true);
+  state.feedClearSearch.handlers.click[0].fn();assert.equal(state.search.value,'');assert.equal(state.feedEmpty.hidden,true);assert.equal(state.search.focused,true);
+  let prevented=false;state.host.handlers.keydown[0].fn({key:'Escape',preventDefault(){prevented=true;},stopPropagation(){}});assert.equal(prevented,true);assert.equal(state.button.focused,true);
+  state.search.value='João';controller.clear();assert.equal(state.search.value,'');assert.equal(state.selected.size,0);assert.equal(closed,2);
+  controller.clearMobileFilters();assert.equal(dates.feedStart.value,'2026-10-13');assert.equal(dates.feedEnd.value,'2026-11-26');assert.equal(controller.feedPhaseReset,true);
+  mobile=false;state.search.value='Other';controller.applySearch(field);assert.equal(state.feedClearSearch.hidden,true);assert.equal(state.feedEmpty.hidden,true);
+  let desktopStopped=false;await selectAll({stopImmediatePropagation(){desktopStopped=true;}});assert.equal(desktopStopped,false);
+  console.log('PASS: mobile-only behavior, desktop default preserved, mobile date/phase reset.');
+  console.log('PASS: accent-insensitive search, clear search, no results, visible Select all preserving other choices, Escape and Clear filters.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

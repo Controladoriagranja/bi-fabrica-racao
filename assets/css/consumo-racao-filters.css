@@ -1,0 +1,11 @@
+/* Enhancements are mobile-only; desktop retains the shared Zootecnico controls. */
+@media (min-width:768px) { .feed-filter-clear-search,.feed-filter-empty { display:none !important; } }
+@media (max-width:767px) {
+.feed-report .checkbox-multiselect-search-wrap { position:relative; }
+.feed-report .checkbox-multiselect-search { padding-right:36px; }
+.feed-report .feed-filter-clear-search { position:absolute; right:12px; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:28px; height:28px; padding:0; border:0; border-radius:5px; background:transparent; color:var(--foreground); font:inherit; font-size:20px; cursor:pointer; }
+.feed-report .feed-filter-clear-search:hover { background:var(--secondary); }
+.feed-report .feed-filter-clear-search:focus-visible { outline:2px solid var(--primary); }
+.feed-report .feed-filter-empty { padding:10px 12px; margin:0; color:var(--muted-foreground); font-size:14px; }
+
+}

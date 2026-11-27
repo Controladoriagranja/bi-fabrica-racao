@@ -8,12 +8,15 @@
     .map(([apiKey,label])=>({id:'feed_'+apiKey,apiKey,label,multi:true,search:true}));
   for(const field of fields){const host=document.createElement('div');host.className='filter-field';
     const label=document.createElement('span');label.textContent=field.label;const control=document.createElement('div');control.className='checkbox-multiselect';control.id=field.id;host.append(label,control);E('feedFilters').append(host);}
-  class FeedFilters extends FilterController {
+  class FeedFilters extends FeedFilterController {
     normalizeOptions(field,items){return (items||[]).map(item=>({value:String(item.value),label:String(item.label)}));}
     loadOptions(options){return FeedActivity.run(()=>super.loadOptions(options));}
   }
   const filters=new FeedFilters({fields,contextProvider:()=>({inicio:E('feedStart').value,fim:E('feedEnd').value}),
-    optionsProvider:async current=>snapshot?D.options(snapshot.rows,current):{},onChange:()=>render()});
+    optionsProvider:async current=>snapshot?D.options(snapshot.rows,current):{},onChange:()=>{
+      if(filters.feedPhaseReset){filters.feedPhaseReset=false;FeedPhase.set('consumo_total');}
+      return render();
+    }});
   const num=(value,digits=3)=>value==null?'—':value.toLocaleString('pt-BR',{minimumFractionDigits:digits,maximumFractionDigits:digits});
   const date=value=>value?value.split('-').reverse().join('/'):'—';
   const unit=()=>snapshot?.unit||ConsumoRacaoConfig.consumptionUnit||'unidade de origem';
