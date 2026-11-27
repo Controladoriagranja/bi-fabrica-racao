@@ -1,0 +1,6 @@
+.material-note{padding:10px 14px;font-size:12px;margin-bottom:10px;color:var(--muted-foreground)}
+.material-search{display:flex;align-items:center;gap:12px;font-size:12px;margin:10px 0}.material-search input{max-width:380px;width:100%;padding:9px;border:1px solid var(--border);border-radius:7px;background:var(--card);color:var(--foreground)}
+.material-table{table-layout:auto;min-width:1050px}.material-table th,.material-table td{padding:9px 8px;white-space:normal;vertical-align:middle}.material-table thead th{top:0!important;background:var(--card)!important;color:var(--foreground);border-bottom:2px solid var(--primary)}
+.material-table thead tr:first-child th:first-child,.material-table tbody th{position:static;min-width:0;background:inherit}.material-table .material-name{text-align:left;min-width:220px}.material-table thead button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}.material-scroll{max-height:65vh}.material-table .total td{background:var(--card)}
+.material-link{color:inherit;text-decoration:underline;text-underline-offset:3px}.material-link:hover{color:var(--primary)}
+.cost-filters a.button{display:flex;align-items:center;text-decoration:none}

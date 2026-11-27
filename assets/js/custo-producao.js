@@ -5,6 +5,7 @@
  const fields=[['ano','Ano'],['mes','Mês'],['planta_codigo','Fábrica']].map(([apiKey,label])=>({id:'cost_'+apiKey,apiKey,label,multi:true,search:true}));
  const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
  let rows=[],request,version=0;
+ const initialQuery=new URLSearchParams(location.search);
  const text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;};
  const num=(v,d=2)=>v==null?'—':Number(v).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
  for(const field of fields){const host=text('div','','filter-field');host.append(text('span',field.label));const control=text('div','','checkbox-multiselect');control.id=field.id;host.append(control);E('costFilters').append(host);}
@@ -16,7 +17,7 @@
  const filters=new CostFilters({fields,includeDependentRefresh:false,onChange:()=>render()});
  function options(preserve=false){for(const field of fields){const state=filters.getState(field),all=state.selected.size===state.options.length,old=[...state.selected];const found=new Map();for(const row of rows){const v=String(row[field.apiKey]);found.set(v,field.apiKey==='mes'?months[Number(v)-1]:field.apiKey==='planta_codigo'?row.planta:v);}
  const list=[...found].map(([value,label])=>({value,label})).sort((a,b)=>a.label.localeCompare(b.label,'pt-BR',{numeric:true}));
- filters.renderMultiOptions(field,list,preserve&&!all?old:list.map(x=>x.value));}}
+ filters.renderMultiOptions(field,list,preserve&&!all?old:initialQuery.has(field.apiKey)?[initialQuery.get(field.apiKey)]:list.map(x=>x.value));}}
  function render(){
   const selected=filters.values(),data=rows.filter(row=>fields.every(f=>!selected[f.apiKey]?.length||selected[f.apiKey].includes(String(row[f.apiKey]))));
   const out=E('costTables');out.replaceChildren();
@@ -38,8 +39,10 @@
    for(const [key,label,perKg,digits] of metrics){const tr=text('tr','',key==='custo_total'?'total':perKg?'':'quantity');tr.append(text('th',label));tr.firstChild.scope='row';
     for(const row of records){
      const value=text('td',num(row[key],digits));
+     const materialLink=(cell,amount)=>{if(amount==null)return;const link=text('a',cell.textContent,'material-link');link.href='movimentacao-materiais.html?'+new URLSearchParams({ano:row.ano,mes:row.mes,planta_codigo:row.planta_codigo});link.title='Ver matéria-prima utilizada neste mês';cell.replaceChildren(link);};
+     if(key==='materia_prima')materialLink(value,row[key]);
      if(!perKg){value.colSpan=2;value.className='month-end';tr.append(value);}
-     else tr.append(value,text('td',num(row[perKg]),'month-end'));
+     else{const unit=text('td',num(row[perKg]),'month-end');if(key==='materia_prima')materialLink(unit,row[perKg]);tr.append(value,unit);}
     }
     const field=perKg||key,delta=previous&&last[field]!=null&&previous[field]!=null?Number(last[field])-Number(previous[field]):null;
     const td=text('td',num(delta,perKg?2:digits),'variance');td.title=previous?period(last)+' menos '+period(previous)+(perKg?' · R$/kg':''):'Aguardando importação do mês anterior';
@@ -57,10 +60,10 @@
     if(p.esquema!=='fabrica_racao'||p.tabela!=='custo_producao_mensal'||!Array.isArray(p.dados)||p.pagina!==page||!Number.isSafeInteger(p.total)||p.total>10000||p.tamanho!==500||p.total_paginas!==Math.ceil(p.total/500))throw Error('Resposta incompatível da consulta de custos.');
     if(page===1){count=p.total;pages=p.total_paginas;}if(p.total!==count||p.total_paginas!==pages)throw Error('Os dados mudaram durante a consulta. Atualize novamente.');
     for(const row of p.dados){if(!row.chave_hash||ids.has(row.chave_hash))throw Error('Mês duplicado na consulta.');ids.add(row.chave_hash);result.push(row);}}
-   if(result.length!==count)throw Error('Consulta incompleta. Atualize novamente.');if(id!==version)return;rows=result;options(preserve);render();
+   if(result.length!==count)throw Error('Consulta incompleta. Atualize novamente.');if(id!==version)return;rows=result;options(preserve);for(const f of fields)initialQuery.delete(f.apiKey);render();
    const updated=rows.map(r=>r.importado_em).filter(Boolean).sort().at(-1);E('costUpdated').textContent=updated?formatarDataHoraBR(updated):'—';
   }catch(e){if(e.name!=='AbortError'&&id===version){rows=[];E('costTables').replaceChildren();E('costUpdated').textContent='—';E('costStatus').textContent=e.message;}}
   finally{if(id===version)E('costReload').disabled=false;}}
- E('costReload').onclick=()=>load({preserve:true});E('costClear').onclick=()=>{options();render();};load();
+ E('costReload').onclick=()=>load({preserve:true});E('costClear').onclick=()=>{for(const f of fields)initialQuery.delete(f.apiKey);options();render();};load();
  setInterval(()=>{if(!document.hidden&&rows.length&&!E('costReload').disabled)load({preserve:true});},120000);
 })();

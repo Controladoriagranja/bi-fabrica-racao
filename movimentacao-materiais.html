@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Movimentação de Materiais — Fábrica de Ração</title>
+  <link rel="icon" href="assets/img/favicon-granja.png">
+  <script>try{const t=localStorage.getItem('bi-fabrica-racao-theme');if(t)document.documentElement.dataset.theme=t;}catch(_){}</script>
+  <link rel="stylesheet" href="assets/vendor/geist/index.css">
+  <link rel="stylesheet" href="assets/css/app.css?v=20261118-filtros-indicador">
+  <link rel="stylesheet" href="assets/css/custo-producao.css?v=20261127-5"><link rel="stylesheet" href="assets/css/movimentacao-materiais.css?v=20261127-1">
+</head>
+<body data-page="custo-producao">
+<main class="app-shell">
+  <header class="page-header">
+    <div><p class="cost-eyebrow">FÁBRICA DE RAÇÃO</p><h1>Movimentação de Materiais com Valores</h1><p>Matéria-prima utilizada por fábrica e mês</p></div>
+    <div class="header-toolbar"><div class="update-meta"><span>Última atualização</span><strong id="costUpdated">—</strong></div><button class="icon-button" type="button" data-theme-toggle aria-label="Alternar tema"><span data-theme-icon>☾</span></button></div>
+  </header>
+  <section class="card cost-filters" aria-label="Filtros">
+    <h2>Filtros</h2><div id="costFilters" class="cost-filter-fields"></div>
+    <button class="button primary" id="costReload" type="button">Atualizar</button>
+    <button class="button" id="costClear" type="button">Limpar filtros</button><a class="button" id="materialsBack" href="custo-producao.html">← Voltar ao custo</a>
+  </section>
+  <p class="cost-context" id="costStatus" role="status">Consultando materiais…</p>
+  <section class="card material-note">MP Utilizada · Data da baixa de matéria-prima · Inclui núcleos. Esta base é diferente da alocação por produto usada no Custo Produção; seus totais podem diferir.</section>
+  <section class="card cost-section"><h2 id="materialTitle">Materiais utilizados</h2>
+    <label class="material-search">Pesquisar material <input id="materialSearch" type="search" placeholder="Código ou descrição"></label>
+    <div class="cost-scroll material-scroll"><table class="cost-table material-table"><thead><tr id="materialHeaders"></tr></thead><tbody id="materialRows"></tbody></table></div>
+    <p id="materialCount"></p>
+  </section>
+</main>
+<script src="assets/js/config.js"></script><script src="assets/js/api.js"></script>
+<script src="assets/js/date-time.js"></script><script src="assets/js/theme.js"></script>
+<script src="assets/js/filters.js"></script><script src="assets/js/movimentacao-materiais.js?v=20261127-1"></script>
+<script src="assets/js/sidebar.js?v=custo-20261127-1"></script>
+</body></html>
