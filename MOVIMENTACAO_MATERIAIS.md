@@ -10,7 +10,7 @@ Tabela: fabrica_racao.movimentacao_materiais. Endpoint autenticado existente do 
 
 São preservadas linhas de detalhe, total e resumo por grupo, campos originais, período, processo, carga e fingerprint. O importador valida contexto e concilia uso, uso real, valor e reposição antes da transação. Substituição atômica somente do mês/contexto correspondente. Não aceita substituir um período por outro menor. Acesso SELECT segue a permissão do módulo Fábrica de Ração.
 
-Tela: movimentacao-materiais.html. Parâmetros ano, mes e planta_codigo acompanham o link no Custo Direto e no seu Custo/kg. A pesquisa e ordenação são locais; a tabela tem rolagem vertical e cabeçalho fixo. Totais da tela somam apenas detalhes filtrados, sem somar novamente os totalizadores da origem.
+Tela: movimentacao-materiais.html. Parâmetros ano, mes e planta_codigo acompanham o link no Custo Direto e no seu Custo/kg. A pesquisa e ordenação são locais; a tabela tem rolagem vertical e cabeçalho fixo. Os totalizadores da tela são as linhas de total oficiais da origem, preservando custo médio, reposição e variação. Ao selecionar vários períodos ou fábricas, cada contexto mantém seu totalizador próprio. A pesquisa altera apenas os itens visíveis; os totais oficiais continuam referentes ao período completo.
 
 Importante: Baixa MP é uma base diferente da alocação por produto do relatório de Custo Produção. Os valores não são forçados a coincidir. Outubro/2026 foi conciliado com cada relatório original.
 

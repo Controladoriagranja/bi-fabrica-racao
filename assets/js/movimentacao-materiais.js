@@ -28,11 +28,13 @@
   const contexts=new Set(details.map(r=>r.planta_codigo+'/'+r.ano+'/'+r.mes));
   const multiple=contexts.size>1;
   for(const r of details){const tr=document.createElement('tr');for(const [key,,digits]of columns){const td=text('td',key==='codigo'||key==='descricao'?r[key]||'—':num(r[key],digits),key==='descricao'?'material-name':'');if(key==='descricao'&&multiple)td.append(text('small',' · '+r.planta+' · '+String(r.mes).padStart(2,'0')+'/'+r.ano));tr.append(td);}body.append(tr);}
-  if(details.length){const tr=text('tr','','total');for(const [key,,digits]of columns){let value='';if(key==='descricao')value=search?'Total dos materiais filtrados':'Total';if(['uso_kg','uso_real_kg','valor','custo_reposicao'].includes(key))value=num(details.reduce((sum,r)=>sum+Number(r[key]||0),0),digits);tr.append(text('td',value));}body.append(tr);}
-  else{const td=text('td','Nenhum material disponível para este período. Se o histórico ainda estiver em importação, atualize novamente.');td.colSpan=columns.length;const tr=text('tr','');tr.append(td);body.append(tr);}
+  const totals=data.filter(r=>r.tipo_linha==='total').sort((a,b)=>a.ano-b.ano||a.mes-b.mes||String(a.planta_codigo).localeCompare(String(b.planta_codigo)));
+  const footer=E('materialTotals');footer.replaceChildren();footer.classList.toggle('single-total',totals.length===1);
+  for(const r of totals){const tr=text('tr','','total');for(const [key,,digits]of columns){let value=key==='codigo'?'':key==='descricao'?'Total do sistema'+(totals.length>1?' · '+r.planta+' · '+String(r.mes).padStart(2,'0')+'/'+r.ano:''):num(r[key],digits);tr.append(text('td',value,key==='descricao'?'material-name':''));}footer.append(tr);}
+  if(!details.length){const td=text('td','Nenhum material disponível para os filtros selecionados.');td.colSpan=columns.length;const tr=text('tr','');tr.append(td);body.append(tr);}
   const plants=[...new Set(data.map(r=>r.planta))],periods=[...new Set(data.map(r=>String(r.mes).padStart(2,'0')+'/'+r.ano))];
   E('materialTitle').textContent='Materiais utilizados'+(plants.length===1?' · '+plants[0]:'')+(periods.length===1?' · '+periods[0]:'');
-  E('materialCount').textContent=details.length+' material(is) · Ordene clicando nos títulos das colunas.';
+  E('materialCount').textContent=details.length+' material(is) · Totalizadores oficiais do período, incluindo custo médio, reposição e variação.'+(search?' A pesquisa altera os itens exibidos; os totais do sistema permanecem referentes ao período completo.':'');
   E('costStatus').textContent='MP Utilizada · Baixa MP · Inclui Núcleos: Não · '+periods.length+' período(s) no recorte.';
  }
  async function load(initial=false){request?.abort();request=new AbortController();E('costReload').disabled=true;E('costStatus').textContent='Consultando materiais…';try{

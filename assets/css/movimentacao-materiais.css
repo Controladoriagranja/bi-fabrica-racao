@@ -4,3 +4,8 @@
 .material-table thead tr:first-child th:first-child,.material-table tbody th{position:static;min-width:0;background:inherit}.material-table .material-name{text-align:left;min-width:220px}.material-table thead button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}.material-scroll{max-height:65vh}.material-table .total td{background:var(--card)}
 .material-link{color:inherit;text-decoration:underline;text-underline-offset:3px}.material-link:hover{color:var(--primary)}
 .cost-filters a.button{display:flex;align-items:center;text-decoration:none}
+
+/* O cabeçalho inteiro permanece no mesmo plano durante a rolagem. */
+.material-table thead th,.material-table thead tr:first-child th:first-child{position:sticky;top:0!important;left:auto;z-index:4;min-width:0;max-width:none;background:var(--card)!important}
+.material-table tfoot td{background:var(--card);font-weight:700;border-top:2px solid var(--primary);border-bottom:1px solid var(--border)}
+.material-table tfoot.single-total td{position:sticky;bottom:0;z-index:3;background:var(--card)}
