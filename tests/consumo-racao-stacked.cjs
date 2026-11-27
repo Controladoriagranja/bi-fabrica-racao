@@ -22,3 +22,9 @@ for(const item of layout){assert.equal(new Set(item.blocks).size,1);assert.ok(Ma
 assert.deepEqual(Array.from(layout[0].values),[1,2,3,4]);assert.equal(layout[0].total,84288);
 assert.equal(S.layout([{total:5},{total:5}])[0].height,1);assert.equal(S.layout([]).length,0);
 console.log('PASS: equal visual blocks, restrained monotonic heights, true values retained, identical totals and zero.');
+assert.equal(S.visibleCount(1600,'perBird',30),10);
+assert.equal(S.visibleCount(1600,'total',30),8);
+assert.equal(S.visibleCount(375,'total',30),1);
+assert.equal(S.visibleCount(768,'perBird',30),4);
+assert.equal(S.visibleCount(1600,'total',2),2);
+console.log('PASS: readable column capacity for desktop, tablet, mobile and both measures.');

@@ -169,23 +169,23 @@
     const colors=[color('--feed-phase-0'),color('--feed-phase-3'),color('--feed-phase-2'),color('--feed-phase-1')];
     const labels=periods.map(item=>grouping==='mes'?item.name.slice(0,7).split('-').reverse().join('/'):date(item.name));
     phaseChart??=echarts.init(E('feedPhasesChart'));phaseChart.clear();
-    const mobile=matchMedia('(max-width:767px)').matches,visible=mobile?3:9;
+    const visible=ConsumoRacaoStacked.visibleCount(E('feedPhasesChart').clientWidth,metric,periods.length);
     const series=D.phases.map((phase,index)=>({name:phase.label,type:'bar',stack:'consumo',barMaxWidth:130,
       itemStyle:{color:colors[index]},label:{show:true,position:'inside',fontFamily:font,fontSize:12,fontWeight:600,
         color:index===2?'#211b1d':'#ffffff',formatter:p=>num(periods[p.dataIndex].values[index])},labelLayout:{hideOverlap:true},
       data:periods.map(item=>item.blocks[index])}));
     // The total is a label at the top of the existing stack, never an extra segment.
     series.push({name:'Total',type:'scatter',symbolSize:0,silent:true,tooltip:{show:false},
-      label:{show:true,position:'top',distance:10,color:color('--primary'),fontFamily:font,fontSize:12,fontWeight:700,formatter:p=>`Total: ${num(periods[p.dataIndex].total)} ${numUnit}`},
+      label:{show:true,position:'top',distance:10,color:color('--primary'),fontFamily:font,fontSize:12,lineHeight:16,fontWeight:700,formatter:p=>`Total:\n${num(periods[p.dataIndex].total)}\n${numUnit}`},
       data:periods.map(item=>item.height)});
     phaseChart.setOption({animation:false,textStyle:{fontFamily:font},
-      grid:{left:mobile?65:95,right:30,top:55,bottom:110},
+      grid:{left:24,right:24,top:65,bottom:110},
       legend:{bottom:40,data:D.phases.map(phase=>phase.label),textStyle:{color:color('--foreground'),fontSize:13}},
       tooltip:{trigger:'axis',confine:true,renderMode:'richText',backgroundColor:color('--card'),borderColor:color('--border'),textStyle:{color:color('--foreground'),fontFamily:font},
         formatter:items=>{const item=periods[items[0].dataIndex];return `${labels[items[0].dataIndex]}${grouping==='semana'?' (início da semana)':''}\n${D.phases.map((phase,i)=>`${phase.label}: ${num(item.values[i])} ${numUnit}`).join('\n')}\nTotal: ${num(item.total)} ${numUnit}\nRegistros: ${num(item.records,0)}\nAves: ${num(item.birds,0)}`;}},
       xAxis:{type:'category',data:labels,axisTick:{show:false},axisLabel:{color:color('--foreground'),fontSize:12,hideOverlap:true},axisLine:{lineStyle:{color:color('--border')}}},
       yAxis:{type:'value',min:0,max:1.12,show:false},
-      dataZoom:[{type:'slider',height:18,bottom:8,start:0,end:Math.min(100,visible/periods.length*100),borderColor:color('--border'),textStyle:{color:color('--foreground')},labelFormatter:(_,label)=>label},{type:'inside',zoomOnMouseWheel:false,moveOnMouseWheel:false}],series
+      dataZoom:[{type:'slider',height:18,bottom:8,startValue:0,endValue:visible-1,maxValueSpan:visible-1,minValueSpan:0,borderColor:color('--border'),textStyle:{color:color('--foreground')},labelFormatter:(_,label)=>label},{type:'inside',maxValueSpan:visible-1,minValueSpan:0,zoomOnMouseWheel:false,moveOnMouseWheel:false}],series
     },true);
   }
   E('feedPrev').onclick=()=>{if(!E('feedPrev').disabled){page--;renderDetails();}};
@@ -203,7 +203,7 @@
   document.querySelectorAll('[data-feed-period]').forEach(button=>button.onclick=()=>{grouping=button.dataset.feedPeriod;
     document.querySelectorAll('[data-feed-period]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));drawCharts();});
   document.addEventListener('dashboard:theme-changed',drawCharts);
-  let resizeFrame;const resize=new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{phaseChart?.resize();});});
+  let resizeFrame,chartWidth=0;const resize=new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{phaseChart?.resize();const width=E('feedPhasesChart').clientWidth;if(width!==chartWidth){chartWidth=width;drawCharts();}});});
   resize.observe(E('feedPhasesChart'));
   window.addEventListener('focus',()=>{if(snapshot)try{adapter.assertSession();}catch(error){snapshot=null;enabled(false);fail(error);}});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&snapshot)try{adapter.assertSession();}catch(error){snapshot=null;enabled(false);fail(error);}});

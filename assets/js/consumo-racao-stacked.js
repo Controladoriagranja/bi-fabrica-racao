@@ -1,5 +1,10 @@
 /* Base comum entre segmentos para que a pilha reconcilie com o total existente. */
 window.ConsumoRacaoStacked = Object.freeze({
+  visibleCount(width, metric, count) {
+    // Reserve enough horizontal room for actual labels, especially large kg totals.
+    const slot=metric==='total'?190:145;
+    return Math.max(1,Math.min(count,Math.floor(Math.max(0,width-48)/slot)));
+  },
   layout(periods) {
     const positive=periods.map(item=>item.total).filter(value=>value>0);
     const min=positive.length?Math.min(...positive):0, max=positive.length?Math.max(...positive):0;
