@@ -173,7 +173,7 @@
   E('feedPageSize').onchange=()=>{pageSize=Number(E('feedPageSize').value);page=1;renderDetails();};
   E('feedReload').onclick=load;
   E('limparFeedFiltros').onclick=async()=>{if(!snapshot)return;filters.clear();E('feedStart').value=snapshot.period.inicio;E('feedEnd').value=snapshot.period.fim;
-    try{await filters.loadOptions({preserve:false});render();}catch(error){fail(error);}};
+    try{await filters.loadOptions({preserve:false});FeedPhase.set('consumo_total');await render();}catch(error){fail(error);}};
   for(const id of ['feedStart','feedEnd'])E(id).addEventListener('change',async()=>{
     if(!snapshot||matchMedia('(max-width:767px)').matches)return;
     try{await filters.loadOptions({preserve:true});render();}catch(error){fail(error);}
