@@ -106,4 +106,7 @@
 .feed-ranking-meta-row { position:relative; height:30px; margin:0 12px; overflow:hidden; }
 #feedRankingMeta { position:absolute; top:2px; transform:translateX(-50%); padding:3px 6px; color:#000000; background:#ffffff; border-radius:4px; font-size:13px; font-weight:600; white-space:nowrap; }
 .feed-ranking-controls .feed-segment { flex-wrap:wrap; max-width:100%; }
+.feed-stacked-controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.feed-stacked-chart { height:460px; }
+@media(max-width:767px) { .feed-stacked-chart { height:420px; } .feed-stacked-controls { gap:8px; } }
 @media(max-width:767px) { .feed-ranking-context { padding:0 15px 12px; } .feed-ranking-controls { gap:8px; } }

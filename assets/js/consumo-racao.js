@@ -66,8 +66,8 @@
     E('feedCoverage').textContent='';E('feedLineageTotal').replaceChildren();
     messageRow(E('feedLineages'),message,8);messageRow(E('feedDetailRows'),message,columns.length);
     E('feedPrev').disabled=true;E('feedNext').disabled=true;
-    for(const id of ['feedPhasesEmpty','feedEvolutionEmpty']){E(id).hidden=false;E(id).textContent=message;}
-    phaseChart?.clear();evolutionChart?.clear();
+    for(const id of ['feedPhasesEmpty']){E(id).hidden=false;E(id).textContent=message;}
+    phaseChart?.clear();
   }
   function headings(){
     E('feedDetailHead').replaceChildren(...columns.map(column=>{
@@ -157,37 +157,36 @@
     }catch(error){if(id===loadId)fail(error);}
     finally{if(id===loadId)E('feedDetailTable').setAttribute('aria-busy','false');}
   }
-  let phaseChart=null,evolutionChart=null;
+  let phaseChart=null;
   function drawCharts(){
     if(!summary)return;
-    E('feedPhaseSubtitle').textContent=`${metric==='total'?'Consumo total':'Consumo por ave'} · ${unit()}`;
-    E('feedEvolutionSubtitle').textContent=`Por data do acerto · ${metric==='total'?'consumo total':'consumo por ave'}`;
-    const hasPhase=summary.phases.some(phase=>(metric==='total'?phase.total:phase.perBird.value)!==null);
-    E('feedPhasesEmpty').hidden=hasPhase;E('feedPhasesEmpty').textContent='Sem consumo válido para os filtros selecionados.';
-    const periods=D.evolution(selected,grouping),hasEvolution=periods.some(item=>(metric==='total'?item.total:item.perBird.value)!==null);
-    E('feedEvolutionEmpty').hidden=hasEvolution;E('feedEvolutionEmpty').textContent='Sem consumo válido para os filtros selecionados.';
-    if(!hasPhase){phaseChart?.clear();}if(!hasEvolution){evolutionChart?.clear();}
-    if(!hasPhase&&!hasEvolution)return;
+    const periods=ConsumoRacaoStacked.periods(selected,grouping,metric);
+    E('feedPhasesEmpty').hidden=periods.length>0;
+    E('feedPhasesEmpty').textContent='Sem consumo completo válido para os filtros selecionados.';
+    if(!periods.length){phaseChart?.clear();return;}
     const style=getComputedStyle(document.body),color=name=>style.getPropertyValue(name).trim(),font=style.fontFamily;
-    const colors=D.phases.map((_,i)=>color('--feed-phase-'+i));
-    const tooltip={trigger:'axis',confine:true,renderMode:'richText',backgroundColor:color('--card'),borderColor:color('--border'),textStyle:{color:color('--foreground'),fontFamily:font}};
-    const axis={axisLine:{lineStyle:{color:color('--border')}},axisTick:{show:false},axisLabel:{color:color('--foreground'),fontFamily:font,fontSize:13},splitLine:{lineStyle:{color:color('--border')}}};
-    if(hasPhase){phaseChart??=echarts.init(E('feedPhasesChart'));
-      phaseChart.setOption({animationDuration:180,textStyle:{fontFamily:font},grid:{left:90,right:26,top:24,bottom:44},
-        tooltip:{...tooltip,formatter:items=>{const phase=summary.phases[items[0].dataIndex];return `${phase.label}\n${metric==='total'?'Consumo':'Consumo/ave'}: ${num(metric==='total'?phase.total:phase.perBird.value)}\nBase por ave: ${num(phase.perBird.denominator,0)} aves\n${phase.perBird.records} registros válidos`; }},
-        xAxis:{...axis,type:'category',data:D.phases.map(phase=>phase.label),axisLabel:{...axis.axisLabel,interval:0,fontSize:12}},
-        yAxis:{...axis,type:'value',axisLabel:{...axis.axisLabel,formatter:value=>num(value)}},
-        series:[{type:'bar',barMaxWidth:55,label:{show:true,position:'top',color:color('--foreground'),formatter:params=>num(params.value)},
-          data:summary.phases.map((phase,i)=>({value:metric==='total'?phase.total:phase.perBird.value,itemStyle:{color:colors[i],borderRadius:[5,5,0,0]}}))}]},true);}
-    if(hasEvolution){evolutionChart??=echarts.init(E('feedEvolutionChart'));
-      const zoom=evolutionChart.getOption()?.dataZoom?.[0];
-      evolutionChart.setOption({animationDuration:180,textStyle:{fontFamily:font},grid:{left:90,right:24,top:24,bottom:78},
-        tooltip:{...tooltip,formatter:items=>{const item=periods[items[0].dataIndex];return `${date(item.name)}${grouping==='semana'?' · início da semana':''}\nConsumo${metric==='total'?'':'/ave'}: ${num(metric==='total'?item.total:item.perBird.value)}\n${item.records} registros\nBase por ave: ${num(item.perBird.denominator,0)} aves`; }},
-        xAxis:{...axis,type:'category',data:periods.map(item=>date(item.name)),boundaryGap:metric==='total',axisLabel:{...axis.axisLabel,hideOverlap:true}},
-        yAxis:{...axis,type:'value',axisLabel:{...axis.axisLabel,formatter:value=>num(value)}},
-        dataZoom:[{type:'slider',height:16,bottom:14,start:zoom?.start??0,end:zoom?.end??100,borderColor:color('--border'),textStyle:{color:color('--muted-foreground')}}],
-        series:[{type:metric==='total'?'bar':'line',name:'Consumo',data:periods.map(item=>metric==='total'?item.total:item.perBird.value),connectNulls:false,
-          itemStyle:{color:color('--primary')},lineStyle:{width:2},areaStyle:{opacity:.05},symbolSize:5,barMaxWidth:28}]},true);}
+    const numUnit=metric==='total'?'kg':'kg/ave';
+    const colors=[color('--feed-phase-0'),color('--feed-phase-3'),color('--feed-phase-2'),color('--feed-phase-1')];
+    const labels=periods.map(item=>grouping==='mes'?item.name.slice(0,7).split('-').reverse().join('/'):date(item.name));
+    phaseChart??=echarts.init(E('feedPhasesChart'));phaseChart.clear();
+    const mobile=matchMedia('(max-width:767px)').matches,visible=mobile?3:9;
+    const series=D.phases.map((phase,index)=>({name:phase.label,type:'bar',stack:'consumo',barMaxWidth:130,
+      itemStyle:{color:colors[index]},label:{show:true,position:'inside',fontFamily:font,fontSize:12,fontWeight:600,
+        color:index===2?'#211b1d':'#ffffff',formatter:p=>num(p.value)},labelLayout:{hideOverlap:true},
+      data:periods.map(item=>item.values[index])}));
+    // The total is a label at the top of the existing stack, never an extra segment.
+    series.push({name:'Total',type:'scatter',symbolSize:0,silent:true,tooltip:{show:false},
+      label:{show:true,position:'top',distance:10,color:color('--primary'),fontFamily:font,fontSize:12,fontWeight:700,formatter:p=>`Total: ${num(p.value)} ${numUnit}`},
+      data:periods.map(item=>item.total)});
+    phaseChart.setOption({animation:false,textStyle:{fontFamily:font},
+      grid:{left:mobile?65:95,right:30,top:55,bottom:110},
+      legend:{bottom:40,data:D.phases.map(phase=>phase.label),textStyle:{color:color('--foreground'),fontSize:13}},
+      tooltip:{trigger:'axis',confine:true,renderMode:'richText',backgroundColor:color('--card'),borderColor:color('--border'),textStyle:{color:color('--foreground'),fontFamily:font},
+        formatter:items=>{const item=periods[items[0].dataIndex];return `${labels[items[0].dataIndex]}${grouping==='semana'?' (início da semana)':''}\n${D.phases.map((phase,i)=>`${phase.label}: ${num(item.values[i])} ${numUnit}`).join('\n')}\nTotal: ${num(item.total)} ${numUnit}\nRegistros: ${num(item.records,0)}\nAves: ${num(item.birds,0)}`;}},
+      xAxis:{type:'category',data:labels,axisTick:{show:false},axisLabel:{color:color('--foreground'),fontSize:12,hideOverlap:true},axisLine:{lineStyle:{color:color('--border')}}},
+      yAxis:{type:'value',name:numUnit,axisLabel:{color:color('--foreground'),formatter:value=>num(value)},splitLine:{lineStyle:{color:color('--border')}}},
+      dataZoom:[{type:'slider',height:18,bottom:8,start:0,end:Math.min(100,visible/periods.length*100),borderColor:color('--border'),textStyle:{color:color('--foreground')},labelFormatter:(_,label)=>label},{type:'inside',zoomOnMouseWheel:false,moveOnMouseWheel:false}],series
+    },true);
   }
   E('feedPrev').onclick=()=>{if(!E('feedPrev').disabled){page--;renderDetails();}};
   E('feedNext').onclick=()=>{if(!E('feedNext').disabled){page++;renderDetails();}};
@@ -204,8 +203,8 @@
   document.querySelectorAll('[data-feed-period]').forEach(button=>button.onclick=()=>{grouping=button.dataset.feedPeriod;
     document.querySelectorAll('[data-feed-period]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));drawCharts();});
   document.addEventListener('dashboard:theme-changed',drawCharts);
-  let resizeFrame;const resize=new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{phaseChart?.resize();evolutionChart?.resize();});});
-  resize.observe(E('feedPhasesChart'));resize.observe(E('feedEvolutionChart'));
+  let resizeFrame;const resize=new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{phaseChart?.resize();});});
+  resize.observe(E('feedPhasesChart'));
   window.addEventListener('focus',()=>{if(snapshot)try{adapter.assertSession();}catch(error){snapshot=null;enabled(false);fail(error);}});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&snapshot)try{adapter.assertSession();}catch(error){snapshot=null;enabled(false);fail(error);}});
   filters.register();headings();enabled(false);E('feedDemo').hidden=!adapter.demonstration;load();
