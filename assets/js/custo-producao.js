@@ -46,6 +46,7 @@
     if(delta)td.classList.add((perKg?delta>0:delta<0)?'adverse':'favorable');tr.append(td);body.append(tr);
    }
    table.append(body);scroll.append(table);section.append(scroll);out.append(section);
+   requestAnimationFrame(()=>{if(scroll.isConnected)scroll.scrollLeft=scroll.scrollWidth-scroll.clientWidth;});
   }
   if(!data.length)out.append(text('div','Nenhum mês disponível para os filtros selecionados.','card cost-empty'));
   E('costStatus').textContent=rows.length?data.length+' registro(s) de fábrica/mês · somente meses importados · valores sem base aparecem como —.':'Ainda não há dados importados.';
