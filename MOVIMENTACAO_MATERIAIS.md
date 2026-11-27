@@ -1,7 +1,7 @@
 Movimentação de Materiais com Valores
 
 Fonte: relatório Agrosys wfr200d / wfr200r, menu 19214, módulo 18660.
-Parâmetros: MP Utilizada (MP), Baixa MP (B), inclui núcleos (yes), sem filtro de ordem de produção. Um relatório por empresa/unidade e mês.
+Parâmetros: MP Utilizada (MP), Baixa MP (B), Inclui Núcleos = Não (no), sem filtro de ordem de produção. Um relatório por empresa/unidade e mês.
 
 - Igaratinga: empresa 1, unidade 53, planta 3.
 - Salomé: empresa 2, unidade 11, planta 5.
@@ -15,3 +15,5 @@ Tela: movimentacao-materiais.html. Parâmetros ano, mes e planta_codigo acompanh
 Importante: Baixa MP é uma base diferente da alocação por produto do relatório de Custo Produção. Os valores não são forçados a coincidir. Outubro/2026 foi conciliado com cada relatório original.
 
 Operação interna: movimentacao_materiais_banco.py e infra/movimentacao_materiais.py no extrator de Fábrica de Ração. Integrado à agenda diária existente. Mês corrente acumula de 1 até a data da coleta; no dia 1 também recoleta o mês anterior completo. Checkpoints por data evitam reutilizar um relatório parcial antigo. Contas automáticas 1–3; conta 4 da logística preservada.
+
+Correção de parâmetros: todos os meses de 2026 são recoletados com vparlog1=no, usando checkpoints próprios em sem_nucleos. A tela aceita apenas registros com inclui_nucleos=false; relatórios antigos com Sim não são apresentados. O parser confirma os parâmetros pelo checkpoint do processo antes de importar.

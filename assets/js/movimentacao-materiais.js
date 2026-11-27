@@ -33,7 +33,7 @@
   const plants=[...new Set(data.map(r=>r.planta))],periods=[...new Set(data.map(r=>String(r.mes).padStart(2,'0')+'/'+r.ano))];
   E('materialTitle').textContent='Materiais utilizados'+(plants.length===1?' · '+plants[0]:'')+(periods.length===1?' · '+periods[0]:'');
   E('materialCount').textContent=details.length+' material(is) · Ordene clicando nos títulos das colunas.';
-  E('costStatus').textContent='MP Utilizada · Baixa MP · Inclui núcleos · '+periods.length+' período(s) no recorte.';
+  E('costStatus').textContent='MP Utilizada · Baixa MP · Inclui Núcleos: Não · '+periods.length+' período(s) no recorte.';
  }
  async function load(initial=false){request?.abort();request=new AbortController();E('costReload').disabled=true;E('costStatus').textContent='Consultando materiais…';try{
   const result=[],ids=new Set();let pages=1,total;
@@ -41,7 +41,7 @@
    if(p.esquema!=='fabrica_racao'||p.tabela!=='movimentacao_materiais'||!Array.isArray(p.dados)||p.pagina!==page||!Number.isSafeInteger(p.total)||p.total>100000||p.tamanho!==500||p.total_paginas!==Math.ceil(p.total/500))throw Error('Resposta incompatível da consulta de materiais.');
    if(page===1){total=p.total;pages=p.total_paginas;}if(total!==p.total)throw Error('Os dados mudaram durante a consulta. Atualize novamente.');
    for(const r of p.dados){if(!r.chave_hash||ids.has(r.chave_hash))throw Error('Registro duplicado na consulta.');ids.add(r.chave_hash);result.push(r);}}
-  if(result.length!==total)throw Error('Consulta incompleta. Atualize novamente.');rows=result;options(!initial,initial);render();
+  if(result.length!==total)throw Error('Consulta incompleta. Atualize novamente.');rows=result.filter(r=>r.inclui_nucleos===false);options(!initial,initial);render();
   E('costUpdated').textContent=rows.map(r=>r.importado_em).filter(Boolean).sort().at(-1)?formatarDataHoraBR(rows.map(r=>r.importado_em).filter(Boolean).sort().at(-1)):'—';
  }catch(e){if(e.name!=='AbortError')E('costStatus').textContent=e.message;}finally{E('costReload').disabled=false;}}
  E('materialSearch').oninput=render;E('costReload').onclick=()=>load();E('costClear').onclick=()=>{E('materialSearch').value='';options();render();};
