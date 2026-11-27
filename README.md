@@ -15,7 +15,7 @@ Reutiliza a sessão da Central (`sessionStorage.granjabi_auth_token`) e o Worker
 
 View de leitura definida em `sql/custo_producao_mensal.sql`, sobre as tabelas `custo_producao` e `resumo_gerencial`. A consulta conserva a autorização do módulo Fábrica de Ração na Central/Worker. Uma linha por fábrica/mês, gerencial/base contábil; usa os totais de alocação por produto, sem duplicar grupos/subgrupos. Dias são datas distintas com produção positiva; ausência não é zero.
 
-Produção diária = produção mensal em kg / dias com produção. Cada custo por kg = custo / produção mensal, conforme a referência de outubro/2026. Custo total = matéria-prima + rateio operacional + rateio de frete; outros componentes do ERP não entram nessa definição. Variação compara os dois últimos meses consecutivos selecionados, sem arredondamento intermediário. Só são mostrados meses importados; outubro/2026 é o recorte inicial.
+Produção diária = produção mensal em kg / dias com produção. Cada custo por kg = custo / produção mensal, conforme a referência de outubro/2026. Custo total = matéria-prima + rateio operacional + rateio de frete; outros componentes do ERP não entram nessa definição. Variação compara o último mês selecionado com o mês imediatamente anterior importado, sem arredondamento intermediário. Só são mostrados meses importados. A consulta pequena é renovada a cada dois minutos enquanto a tela está visível, preservando a seleção dos filtros, para acompanhar a importação do histórico.
 
 O acesso real deve ser validado pela Central na origem autorizada. Localmente, `?demo=1` em localhost ativa exclusivamente dados sintéticos, sinalizados na tela, sem fallback automático em produção.
 

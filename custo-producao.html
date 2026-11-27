@@ -7,7 +7,7 @@
   <script>try{const t=localStorage.getItem('bi-fabrica-racao-theme');if(t)document.documentElement.dataset.theme=t;}catch(_){}</script>
   <link rel="stylesheet" href="assets/vendor/geist/index.css">
   <link rel="stylesheet" href="assets/css/app.css?v=20261118-filtros-indicador">
-  <link rel="stylesheet" href="assets/css/custo-producao.css?v=20261127-2">
+  <link rel="stylesheet" href="assets/css/custo-producao.css?v=20261127-3">
 </head>
 <body data-page="custo-producao">
 <main class="app-shell">
@@ -25,11 +25,11 @@
   <details class="card cost-rules"><summary>Como os valores são calculados</summary>
     <p>Produção Ração: total de Produção Período, em kg. Dias de Produção: dias distintos com produção maior que zero no Resumo Gerencial. Produção Diária: produção do mês ÷ dias com produção.</p>
     <p>Matéria-prima, gastos operacionais e frete: totais de Custo Direto, Alocado Por Rateio e Frete Rateio da alocação por produto. Custo Total: soma desses três componentes. Custo/kg: cada custo ÷ produção total do mês.</p>
-    <p>Variação: último mês selecionado menos o mês imediatamente anterior, quando disponível e selecionado. Nas três primeiras linhas compara quantidades; nas linhas de custos compara R$/kg. Os cálculos usam os valores sem arredondamento. Ausências aparecem como —.</p>
+    <p>Variação: último mês selecionado menos o mês imediatamente anterior importado, mesmo que ele não esteja selecionado no filtro. Nas três primeiras linhas compara quantidades; nas linhas de custos compara R$/kg. Os cálculos usam os valores sem arredondamento. Ausências aparecem como — até a importação da base de comparação.</p>
   </details>
 </main>
 <script src="assets/js/config.js"></script><script src="assets/js/api.js"></script>
 <script src="assets/js/date-time.js"></script><script src="assets/js/theme.js"></script>
-<script src="assets/js/filters.js"></script><script src="assets/js/custo-producao.js?v=20261127-1"></script>
+<script src="assets/js/filters.js"></script><script src="assets/js/custo-producao.js?v=20261127-3"></script>
 <script src="assets/js/sidebar.js?v=custo-20261127-1"></script>
 </body></html>
