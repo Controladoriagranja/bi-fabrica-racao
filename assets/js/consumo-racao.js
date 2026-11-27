@@ -160,7 +160,7 @@
   let phaseChart=null;
   function drawCharts(){
     if(!summary)return;
-    const periods=ConsumoRacaoStacked.periods(selected,grouping,metric);
+    const periods=ConsumoRacaoStacked.layout(ConsumoRacaoStacked.periods(selected,grouping,metric));
     E('feedPhasesEmpty').hidden=periods.length>0;
     E('feedPhasesEmpty').textContent='Sem consumo completo válido para os filtros selecionados.';
     if(!periods.length){phaseChart?.clear();return;}
@@ -172,19 +172,19 @@
     const mobile=matchMedia('(max-width:767px)').matches,visible=mobile?3:9;
     const series=D.phases.map((phase,index)=>({name:phase.label,type:'bar',stack:'consumo',barMaxWidth:130,
       itemStyle:{color:colors[index]},label:{show:true,position:'inside',fontFamily:font,fontSize:12,fontWeight:600,
-        color:index===2?'#211b1d':'#ffffff',formatter:p=>num(p.value)},labelLayout:{hideOverlap:true},
-      data:periods.map(item=>item.values[index])}));
+        color:index===2?'#211b1d':'#ffffff',formatter:p=>num(periods[p.dataIndex].values[index])},labelLayout:{hideOverlap:true},
+      data:periods.map(item=>item.blocks[index])}));
     // The total is a label at the top of the existing stack, never an extra segment.
     series.push({name:'Total',type:'scatter',symbolSize:0,silent:true,tooltip:{show:false},
-      label:{show:true,position:'top',distance:10,color:color('--primary'),fontFamily:font,fontSize:12,fontWeight:700,formatter:p=>`Total: ${num(p.value)} ${numUnit}`},
-      data:periods.map(item=>item.total)});
+      label:{show:true,position:'top',distance:10,color:color('--primary'),fontFamily:font,fontSize:12,fontWeight:700,formatter:p=>`Total: ${num(periods[p.dataIndex].total)} ${numUnit}`},
+      data:periods.map(item=>item.height)});
     phaseChart.setOption({animation:false,textStyle:{fontFamily:font},
       grid:{left:mobile?65:95,right:30,top:55,bottom:110},
       legend:{bottom:40,data:D.phases.map(phase=>phase.label),textStyle:{color:color('--foreground'),fontSize:13}},
       tooltip:{trigger:'axis',confine:true,renderMode:'richText',backgroundColor:color('--card'),borderColor:color('--border'),textStyle:{color:color('--foreground'),fontFamily:font},
         formatter:items=>{const item=periods[items[0].dataIndex];return `${labels[items[0].dataIndex]}${grouping==='semana'?' (início da semana)':''}\n${D.phases.map((phase,i)=>`${phase.label}: ${num(item.values[i])} ${numUnit}`).join('\n')}\nTotal: ${num(item.total)} ${numUnit}\nRegistros: ${num(item.records,0)}\nAves: ${num(item.birds,0)}`;}},
       xAxis:{type:'category',data:labels,axisTick:{show:false},axisLabel:{color:color('--foreground'),fontSize:12,hideOverlap:true},axisLine:{lineStyle:{color:color('--border')}}},
-      yAxis:{type:'value',name:numUnit,axisLabel:{color:color('--foreground'),formatter:value=>num(value)},splitLine:{lineStyle:{color:color('--border')}}},
+      yAxis:{type:'value',min:0,max:1.12,show:false},
       dataZoom:[{type:'slider',height:18,bottom:8,start:0,end:Math.min(100,visible/periods.length*100),borderColor:color('--border'),textStyle:{color:color('--foreground')},labelFormatter:(_,label)=>label},{type:'inside',zoomOnMouseWheel:false,moveOnMouseWheel:false}],series
     },true);
   }

@@ -15,3 +15,10 @@ assert.equal(S.periods(rows,'dia','perBird').length,2);
 assert.equal(S.periods([],'dia','total').length,0);
 assert.equal(S.periods([row('2026-11-02',10,[0,0,0,0])],'dia','perBird')[0].total,0);
 console.log('PASS: day/week/month, weighted ratios, matching stack/total, missing phases, zero birds and actual zero.');
+const layout=S.layout([{total:84288,values:[1,2,3,4]},{total:3171291,values:[5,6,7,8]},{total:1000000,values:[9,10,11,12]},{total:0,values:[0,0,0,0]}]);
+assert.equal(layout[0].height,.8);assert.equal(layout[1].height,1);
+assert.ok(layout[2].height>.8&&layout[2].height<1);assert.equal(layout[3].height,0);
+for(const item of layout){assert.equal(new Set(item.blocks).size,1);assert.ok(Math.abs(item.blocks.reduce((a,b)=>a+b,0)-item.height)<1e-12);}
+assert.deepEqual(Array.from(layout[0].values),[1,2,3,4]);assert.equal(layout[0].total,84288);
+assert.equal(S.layout([{total:5},{total:5}])[0].height,1);assert.equal(S.layout([]).length,0);
+console.log('PASS: equal visual blocks, restrained monotonic heights, true values retained, identical totals and zero.');
