@@ -40,7 +40,7 @@ window.ConsumoRacaoRanking = (() => {
   'use strict';
   if(typeof document==='undefined')return;
   const E=id=>document.getElementById(id), host=E('feedRanking'), chartHost=E('feedRankingChart');
-  let rows=[], metas=[], integrated=null, phase='fase_pre_menos_inicial', descending=true, chart=null, shown=[];
+  let rows=[], metas=[], integrated=null, phase='fase_pre_menos_inicial', descending=true, chart=null;
   const phaseLabels={...Object.fromEntries(ConsumoRacaoData.phases.map(item=>[item.key,item.label])),consumo_total:'Total'};
   const num=(v,d=3)=>v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
   let currentGoal=null;
@@ -53,20 +53,24 @@ window.ConsumoRacaoRanking = (() => {
   }
   function draw(){
     const result=ConsumoRacaoRanking.aggregate(rows,metas,integrated,phase);
-    shown=ConsumoRacaoRanking.ordered(result.groups,descending);
+    const shown=ConsumoRacaoRanking.ordered(result.groups,descending);
     const goal=shown[0]?.goal, mixed=shown.some(item=>Math.abs(item.goal-goal)>1e-10);
     E('feedRankingTitle').textContent=integrated===null?'Ranking de desvios por integrado':`Desvios por galpão · ${rows.find(row=>row.codigo===integrated)?.integrado || integrated}`;
     E('feedRankingStatus').textContent=`${phaseLabels[phase]} · ${shown.length} ${integrated===null?'integrados':'galpões'} · kg/ave${result.excluded?` · ${result.excluded} registros sem consumo da fase, aves válidas ou meta vigente`:''}`;
     E('feedRankingEmpty').hidden=shown.length>0&&!mixed;
     E('feedRankingEmpty').textContent=mixed?'Há metas vigentes diferentes entre os grupos. Selecione um período com meta única para comparar com a linha de referência.':!metas.length?'Metas indisponíveis para calcular o ranking.':'Nenhum registro válido nesta seleção.';
-    if(!shown.length||mixed){currentGoal=null;chart?.clear();positionMeta();return;}
+    const scroll=host.querySelector('.feed-ranking-scroll');
+    if(scroll)scroll.scrollTop=0;
+    if(!shown.length||mixed){currentGoal=null;chart?.clear();chartHost.style.height='300px';chart?.resize();positionMeta();return;}
     currentGoal=goal;
     chartHost.style.height=`${Math.max(300,shown.length*38+100)}px`;
     const style=getComputedStyle(document.body), color=name=>style.getPropertyValue(name).trim();
-    chart??=echarts.init(chartHost);chart.resize();
+    chart??=echarts.init(chartHost);
+    // Remove the previous render before resizing: its callbacks/data belong to the old filter.
+    chart.clear();chart.resize();
     const min=Math.min(0,...shown.map(item=>item.kgPerBird)), max=Math.max(0,...shown.map(item=>item.kgPerBird));
     const mobile=matchMedia('(max-width:767px)').matches;
-    chart.setOption({animationDuration:160,textStyle:{fontFamily:style.fontFamily},
+    chart.setOption({animation:false,textStyle:{fontFamily:style.fontFamily},
       grid:{left:12,right:mobile?125:180,top:18,bottom:65,containLabel:true},
       tooltip:{trigger:'item',renderMode:'richText',confine:true,backgroundColor:color('--card'),borderColor:color('--border'),textStyle:{color:color('--foreground')},
         formatter:p=>{const item=shown[p.dataIndex];return `${item.label}\nDesvio: ${num(item.kgPerBird)} kg/ave · ${num(item.tonnes)} t\nRealizado: ${num(item.actual/item.birds)} kg/ave\nMeta ponderada: ${num(item.expected/item.birds)} kg/ave\nAves: ${num(item.birds,0)} · Registros: ${item.records}`;}},

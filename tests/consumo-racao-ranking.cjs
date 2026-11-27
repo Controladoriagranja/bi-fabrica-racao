@@ -25,6 +25,7 @@ const events={},elements=new Map(),clicks={},zr={};let option;
 function el(id){if(!elements.has(id))elements.set(id,{style:{},hidden:false,textContent:'',dataset:{},replaceChildren(...items){this.children=items;},setAttribute(){},contains(target){return target.inside===true;}});return elements.get(id);}
 const phases=['fase_pre_menos_inicial','fase_inicial','fase_crescimento','fase_final','consumo_total'].map(value=>({...el('phase-'+value),dataset:{rankingPhase:value}}));
 el('feedRanking').querySelectorAll=()=>phases;
+el('feedRanking').querySelector=()=>el('ranking-scroll');
 const chart={convertToPixel(){return 220;},resize(){},clear(){option=null;},setOption(value){option=value;},off(){},on(name,fn){clicks[name]=fn;},getZr(){return {off(){},on(name,fn){zr[name]=fn;}};}};
 Object.assign(ctx,{document:{body:{},getElementById:el,querySelector:()=>null,addEventListener:(name,fn)=>events[name]=fn},
   Option:function(label,value){this.label=label;this.value=value;},getComputedStyle:()=>({fontFamily:'sans-serif',getPropertyValue:()=> '#B36B00'}),
@@ -68,3 +69,21 @@ console.log('PASS: all producers, phase switching, real bar lengths, signed orde
 assert.equal(R.gradient(.5,-1,1,'#00843d','#B36B00','#d12838'),'#b36b00');
 assert.equal(R.gradient(.25,-1,1,'#00843d','#B36B00','#d12838'),R.gradient(-.25,-1,1,'#00843d','#B36B00','#d12838'));
 console.log('PASS: absolute-distance gradient is symmetric, target green, halfway amber, extremes red; three decimal axes and fixed meta marker.');
+
+// Reproduce all producers -> one lineage/producer -> empty -> all.
+phases[0].onclick();
+events['feed:ranking-data']({detail:{rows:[exact,below,above],metas:actualMetas}});
+const oldLabel=option.series[0].label.formatter, oldTooltip=option.tooltip.formatter;
+const oldLastLabel=oldLabel({dataIndex:2});
+el('ranking-scroll').scrollTop=900;
+events['feed:ranking-data']({detail:{rows:[exact],metas:actualMetas}});
+assert.equal(option.series[0].data.length,1);assert.equal(option.yAxis.data.length,1);
+assert.equal(oldLabel({dataIndex:2}),oldLastLabel);assert.doesNotThrow(()=>oldTooltip({dataIndex:2}));
+assert.equal(el('ranking-scroll').scrollTop,0);assert.equal(el('feedRankingChart').style.height,'300px');
+assert.equal(option.animation,false);
+assert.match(option.series[0].label.formatter({dataIndex:0}),/0,220/);
+events['feed:ranking-data']({detail:{rows:[],metas:actualMetas}});
+assert.equal(option,null);assert.equal(el('feedRankingMeta').hidden,true);
+events['feed:ranking-data']({detail:{rows:[exact,below,above],metas:actualMetas}});
+assert.equal(option.series[0].data.length,3);
+console.log('PASS: filter shrink/empty/restore, stable old callbacks, no stale bars, scroll reset and marker refresh.');

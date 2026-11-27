@@ -26,6 +26,7 @@
     const label=document.createElement('span');label.textContent=field.label;const control=document.createElement('div');control.className='checkbox-multiselect';control.id=field.id;host.append(label,control);E('feedFilters').append(host);}
   class FeedFilters extends FilterController {
     normalizeOptions(field,items){return (items||[]).map(item=>({value:String(item.value),label:String(item.label)}));}
+    loadOptions(options){return FeedActivity.run(()=>super.loadOptions(options));}
   }
   const filters=new FeedFilters({fields,contextProvider:()=>({inicio:E('feedStart').value,fim:E('feedEnd').value}),
     optionsProvider:async current=>snapshot?D.options(snapshot.rows,current):{},onChange:()=>render()});
@@ -123,7 +124,7 @@
     renderLineages();renderDetails();drawCharts();
     document.dispatchEvent(new CustomEvent('feed:ranking-data',{detail:{rows:selected,metas}}));
   }
-  function render(){if(!snapshot)return;const finish=ApiActivity.begin();requestAnimationFrame(()=>{try{renderNow();}catch(error){fail(error);}finally{finish();}});}
+  function render(){if(!snapshot)return;return FeedActivity.run(()=>{try{renderNow();}catch(error){fail(error);}});}
   function fail(error){
     if(error?.name==='AbortError')return;
     if(error.code==='SESSION_CHANGED'||[401,403].includes(error.status)){
